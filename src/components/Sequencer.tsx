@@ -14,12 +14,14 @@ interface Note {
 }
 
 interface BlockProps {
+  blockId: string;
   startTime: number;
   duration: number;
   frequency: number;
   gain: number;
   trackDimensions: { width: number; height: number };
   trackLength: number; // in seconds
+  setBlocks: React.Dispatch<React.SetStateAction<Record<string, Note>>>;
 }
 
 const Block = (props: BlockProps) => {
@@ -63,12 +65,23 @@ const Block = (props: BlockProps) => {
           setPointerIsPressed(true);
         }
       }}
-      onPointerUp={() => setPointerIsPressed(false)}
+      onPointerUp={() => {
+        setPointerIsPressed(false);
+        props.setBlocks((blocks) => {
+          const selectedBlock = blocks[props.blockId];
+          const newStartTime =
+            (left / props.trackDimensions.width) * props.trackLength;
+          return {
+            ...blocks,
+            [props.blockId]: { ...selectedBlock, startTime: newStartTime },
+          };
+        });
+      }}
       onPointerMove={(e) => {
         // TODO: Handle bounds of tracks
 
         if (pointerIsPressed) {
-          setLeft(e.clientX - e.currentTarget.clientWidth / 2);
+          setLeft(e.clientX);
         }
       }}
     >
@@ -78,15 +91,30 @@ const Block = (props: BlockProps) => {
 };
 
 export const Sequencer = (props: SequencerProps) => {
-  const [notes, setNotes] = useState<Note[]>([
-    { startTime: 0, duration: 1, frequency: 440, gain: 1 },
-    { startTime: 1, duration: 1, frequency: 540, gain: 1 },
-  ]);
+  // const [notes, setNotes] = useState<Note[]>([
+  //   { startTime: 0, duration: 1, frequency: 440, gain: 1 },
+  //   { startTime: 1, duration: 1, frequency: 540, gain: 1 },
+  // ]);
+
+  const [blocks, setBlocks] = useState<Record<string, Note>>({
+    [crypto.randomUUID()]: {
+      startTime: 0,
+      duration: 1,
+      frequency: 440,
+      gain: 1,
+    },
+    [crypto.randomUUID()]: {
+      startTime: 1,
+      duration: 1,
+      frequency: 540,
+      gain: 1,
+    },
+  });
   const [trackLength, setTrackLength] = useState(5); // secs
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
 
   const playTrack = () => {
-    notes.forEach((note) => {
+    Object.values(blocks).forEach((note) => {
       const startTime = props.audioContext.currentTime + note.startTime;
       const duration = note.duration;
 
@@ -110,6 +138,8 @@ export const Sequencer = (props: SequencerProps) => {
     });
   };
 
+  console.log(blocks);
+
   return (
     <div>
       <div>
@@ -125,12 +155,14 @@ export const Sequencer = (props: SequencerProps) => {
           position: 'relative',
         }}
       >
-        {notes.map((note) => (
+        {Object.entries(blocks).map(([blockId, note]) => (
           <Block
-            key={`${note.startTime}-${note.duration}-${note.frequency}`}
+            key={blockId}
+            blockId={blockId}
             {...note}
             trackDimensions={trackDimensions}
             trackLength={trackLength}
+            setBlocks={setBlocks}
           />
         ))}
       </div>
