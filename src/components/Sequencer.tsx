@@ -14,15 +14,15 @@ interface Note {
 
 export const Sequencer = (props: SequencerProps) => {
   const [notes, setNotes] = useState<Note[]>([
-    { startTime: 0, duration: 0.5, frequency: 440, gain: 1 },
-    { startTime: 0, duration: 0.5, frequency: 540, gain: 1 },
+    { startTime: 0, duration: 1, frequency: 440, gain: 1 },
+    { startTime: 1, duration: 1, frequency: 540, gain: 1 },
   ]);
-  const [trackLength, setTrackLength] = useState(15); // secs
-  const { ref, dimensions } = useResizeObserver();
+  const [trackLength, setTrackLength] = useState(5); // secs
+  const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
 
   const playTrack = () => {
     notes.forEach((note) => {
-      const startTime = props.audioContext.currentTime;
+      const startTime = props.audioContext.currentTime + note.startTime;
       const duration = note.duration;
 
       const oscillatorNode = props.audioContext.createOscillator();
@@ -31,8 +31,7 @@ export const Sequencer = (props: SequencerProps) => {
         note.frequency,
         props.audioContext.currentTime
       );
-      // NOTE: Each key should have its own gain node so it can maintain its own
-      // volume/attack/release stuff
+
       const gainNode = props.audioContext.createGain();
 
       gainNode.gain.setValueAtTime(note.gain, startTime);
@@ -49,22 +48,37 @@ export const Sequencer = (props: SequencerProps) => {
   return (
     <div>
       <div>
-        Track: {dimensions.width}px x {dimensions.height}px
+        Track: {trackDimensions.width}px x {trackDimensions.height}px
       </div>
       <button onClick={playTrack}>play</button>
       <div
-        ref={ref}
+        ref={trackRef}
         style={{
           height: '50px',
           width: '100%',
           border: '1px solid black',
+          position: 'relative',
         }}
       >
-        {notes.map((note) => (
-          <div key={`${note.startTime}-${note.duration}-${note.frequency}`}>
-            {note.frequency}
-          </div>
-        ))}
+        {notes.map((note) => {
+          const left = (note.startTime / trackLength) * trackDimensions.width;
+          const noteWidth =
+            (note.duration / trackLength) * trackDimensions.width;
+          return (
+            <div
+              key={`${note.startTime}-${note.duration}-${note.frequency}`}
+              style={{
+                border: '1px dashed red',
+                width: `${noteWidth}px`,
+                height: '50px',
+                left: `${left}px`,
+                position: 'absolute',
+              }}
+            >
+              {note.frequency}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
