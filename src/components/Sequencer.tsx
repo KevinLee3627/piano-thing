@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
-import { getRandomInt } from '../util/getRandomInt';
 
 interface SequencerProps {
   audioContext: AudioContext;
-}
-
-interface Note {
-  startTime: number;
-  duration: number;
-  frequency: number;
-  gain: number;
 }
 
 interface BlockProps {
@@ -21,7 +13,7 @@ interface BlockProps {
   gain: number;
   trackDimensions: { width: number; height: number };
   trackLength: number; // in seconds
-  setBlocks: React.Dispatch<React.SetStateAction<Record<string, Note>>>;
+  setBlocks: React.Dispatch<React.SetStateAction<Record<string, BlockProps>>>;
 }
 
 const Block = (props: BlockProps) => {
@@ -90,20 +82,7 @@ const Block = (props: BlockProps) => {
 };
 
 export const Sequencer = (props: SequencerProps) => {
-  const [blocks, setBlocks] = useState<Record<string, Note>>({
-    [crypto.randomUUID()]: {
-      startTime: 0,
-      duration: 1,
-      frequency: 440,
-      gain: 1,
-    },
-    [crypto.randomUUID()]: {
-      startTime: 1,
-      duration: 1,
-      frequency: 540,
-      gain: 1,
-    },
-  });
+  const [blocks, setBlocks] = useState<Record<string, BlockProps>>({});
   const [trackLength, setTrackLength] = useState(5); // secs
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
 
@@ -132,12 +111,33 @@ export const Sequencer = (props: SequencerProps) => {
     });
   };
 
+  const addBlock = () => {
+    const newBlockId = crypto.randomUUID();
+    const newBlock: BlockProps = {
+      blockId: newBlockId,
+      startTime: 0,
+      duration: 1,
+      frequency: 440,
+      gain: 1,
+      trackDimensions,
+      trackLength,
+      setBlocks,
+    };
+    setBlocks((blocks) => {
+      return {
+        ...blocks,
+        [newBlockId]: newBlock,
+      };
+    });
+  };
+
   return (
     <div>
       <div>
         Track: {trackDimensions.width}px x {trackDimensions.height}px
       </div>
       <button onClick={playTrack}>play</button>
+      <button onClick={addBlock}>add block</button>
       <input
         type='number'
         step={0.01}
@@ -149,22 +149,15 @@ export const Sequencer = (props: SequencerProps) => {
       <div
         ref={trackRef}
         style={{
-          height: '50px',
+          height: '250px',
           width: '80%',
           margin: '0 auto',
           border: '1px solid black',
           position: 'relative',
         }}
       >
-        {Object.entries(blocks).map(([blockId, note]) => (
-          <Block
-            key={blockId}
-            blockId={blockId}
-            {...note}
-            trackDimensions={trackDimensions}
-            trackLength={trackLength}
-            setBlocks={setBlocks}
-          />
+        {Object.entries(blocks).map(([blockId, block]) => (
+          <Block key={blockId} {...block} />
         ))}
       </div>
     </div>
