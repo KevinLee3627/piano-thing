@@ -43,7 +43,7 @@ const Block = (props: BlockProps) => {
         (props.startTime / props.trackLength) * props.trackDimensions.width
       );
     }
-  }, [touched, props.trackDimensions]);
+  }, [touched, props.trackDimensions, props.trackLength]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -91,11 +91,6 @@ const Block = (props: BlockProps) => {
 };
 
 export const Sequencer = (props: SequencerProps) => {
-  // const [notes, setNotes] = useState<Note[]>([
-  //   { startTime: 0, duration: 1, frequency: 440, gain: 1 },
-  //   { startTime: 1, duration: 1, frequency: 540, gain: 1 },
-  // ]);
-
   const [blocks, setBlocks] = useState<Record<string, Note>>({
     [crypto.randomUUID()]: {
       startTime: 0,
@@ -138,14 +133,20 @@ export const Sequencer = (props: SequencerProps) => {
     });
   };
 
-  console.log(blocks);
-
   return (
     <div>
       <div>
         Track: {trackDimensions.width}px x {trackDimensions.height}px
       </div>
       <button onClick={playTrack}>play</button>
+      <input
+        type='number'
+        step={0.01}
+        value={trackLength}
+        onChange={(e) => {
+          setTrackLength(Number(e.target.value));
+        }}
+      />
       <div
         ref={trackRef}
         style={{
