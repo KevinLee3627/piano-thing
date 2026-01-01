@@ -14,8 +14,8 @@ export const useResizeObserver = () => {
       const observer = new ResizeObserver((entries) => {
         for (let entry of entries) {
           setDimensions({
-            width: entry.contentRect.width,
-            height: entry.contentRect.height,
+            width: entry.borderBoxSize[0].inlineSize,
+            height: entry.borderBoxSize[0].blockSize,
           });
         }
       });
