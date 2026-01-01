@@ -28,7 +28,6 @@ const Block = (props: BlockProps) => {
   const noteWidth =
     (props.duration / props.trackLength) * props.trackDimensions.width;
 
-  const [touched, setTouched] = useState(false);
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
   const [left, setLeft] = useState(
@@ -36,14 +35,12 @@ const Block = (props: BlockProps) => {
   );
 
   // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
-  // resize observer?
+  // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
-    if (!touched) {
-      setLeft(
-        (props.startTime / props.trackLength) * props.trackDimensions.width
-      );
-    }
-  }, [touched, props.trackDimensions, props.trackLength]);
+    setLeft(
+      (props.startTime / props.trackLength) * props.trackDimensions.width
+    );
+  }, [props.trackDimensions, props.trackLength]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -59,7 +56,6 @@ const Block = (props: BlockProps) => {
       }}
       onPointerDown={(e) => {
         if (ref.current != null) {
-          setTouched(true);
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
           ref.current.setPointerCapture(e.pointerId);
           setPointerIsPressed(true);
