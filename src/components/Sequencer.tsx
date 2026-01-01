@@ -78,14 +78,17 @@ const Block = (props: BlockProps) => {
         });
       }}
       onPointerMove={(e) => {
-        // TODO: Handle bounds of tracks
-
+        if (ref.current == null) return;
         if (pointerIsPressed) {
-          setLeft(e.clientX);
+          const maxLeft = props.trackDimensions.width - ref.current.offsetWidth;
+          // NOTE: Constrains block dragging to start and end of the track
+          setLeft(
+            Math.max(Math.min(e.clientX - ref.current.offsetWidth, maxLeft), 0)
+          );
         }
       }}
     >
-      {props.frequency}
+      <p>{props.blockId.slice(0, 4)}</p>
     </div>
   );
 };
@@ -151,7 +154,8 @@ export const Sequencer = (props: SequencerProps) => {
         ref={trackRef}
         style={{
           height: '50px',
-          width: '100%',
+          width: '80%',
+          margin: '0 auto',
           border: '1px solid black',
           position: 'relative',
         }}
