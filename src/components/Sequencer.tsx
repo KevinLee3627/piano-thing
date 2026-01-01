@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
+import { getRandomInt } from '../util/getRandomInt';
 
 interface SequencerProps {
   audioContext: AudioContext;
@@ -11,6 +12,57 @@ interface Note {
   frequency: number;
   gain: number;
 }
+
+interface BlockProps {
+  startTime: number;
+  duration: number;
+  frequency: number;
+  gain: number;
+  trackDimensions: { width: number; height: number };
+  trackLength: number; // in seconds
+}
+
+const Block = (props: BlockProps) => {
+  const noteWidth =
+    (props.duration / props.trackLength) * props.trackDimensions.width;
+
+  const [pointerIsPressed, setPointerIsPressed] = useState(false);
+
+  const [left, setLeft] = useState(
+    (props.startTime / props.trackLength) * props.trackDimensions.width
+  );
+
+  const ref = useRef<HTMLDivElement>(null);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        width: `${noteWidth}px`,
+        height: '100%',
+        left: `${left}px`,
+        position: 'absolute',
+        backgroundColor: pointerIsPressed ? 'red' : 'green',
+      }}
+      onPointerDown={(e) => {
+        if (ref.current != null) {
+          // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
+          ref.current.setPointerCapture(e.pointerId);
+        }
+
+        setPointerIsPressed(true);
+      }}
+      onPointerUp={() => setPointerIsPressed(false)}
+      onPointerMove={(e) => {
+        if (pointerIsPressed) {
+          setLeft(e.clientX - e.currentTarget.clientWidth / 2);
+        }
+      }}
+    >
+      {props.frequency}
+    </div>
+  );
+};
 
 export const Sequencer = (props: SequencerProps) => {
   const [notes, setNotes] = useState<Note[]>([
@@ -60,25 +112,14 @@ export const Sequencer = (props: SequencerProps) => {
           position: 'relative',
         }}
       >
-        {notes.map((note) => {
-          const left = (note.startTime / trackLength) * trackDimensions.width;
-          const noteWidth =
-            (note.duration / trackLength) * trackDimensions.width;
-          return (
-            <div
-              key={`${note.startTime}-${note.duration}-${note.frequency}`}
-              style={{
-                border: '1px dashed red',
-                width: `${noteWidth}px`,
-                height: '50px',
-                left: `${left}px`,
-                position: 'absolute',
-              }}
-            >
-              {note.frequency}
-            </div>
-          );
-        })}
+        {notes.map((note) => (
+          <Block
+            key={`${note.startTime}-${note.duration}-${note.frequency}`}
+            {...note}
+            trackDimensions={trackDimensions}
+            trackLength={trackLength}
+          />
+        ))}
       </div>
     </div>
   );
