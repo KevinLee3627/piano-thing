@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { getRandomInt } from '../util/getRandomInt';
 
@@ -26,11 +26,22 @@ const Block = (props: BlockProps) => {
   const noteWidth =
     (props.duration / props.trackLength) * props.trackDimensions.width;
 
+  const [touched, setTouched] = useState(false);
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
   const [left, setLeft] = useState(
     (props.startTime / props.trackLength) * props.trackDimensions.width
   );
+
+  // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
+  // resize observer?
+  useEffect(() => {
+    if (!touched) {
+      setLeft(
+        (props.startTime / props.trackLength) * props.trackDimensions.width
+      );
+    }
+  }, [touched, props.trackDimensions]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,14 +57,16 @@ const Block = (props: BlockProps) => {
       }}
       onPointerDown={(e) => {
         if (ref.current != null) {
+          setTouched(true);
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
           ref.current.setPointerCapture(e.pointerId);
+          setPointerIsPressed(true);
         }
-
-        setPointerIsPressed(true);
       }}
       onPointerUp={() => setPointerIsPressed(false)}
       onPointerMove={(e) => {
+        // TODO: Handle bounds of tracks
+
         if (pointerIsPressed) {
           setLeft(e.clientX - e.currentTarget.clientWidth / 2);
         }
