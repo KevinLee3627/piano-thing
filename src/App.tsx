@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import { Note } from './components/Note';
+import { Sequencer } from './components/Sequencer';
 
 const keyNames = [
   'A',
@@ -49,6 +50,7 @@ function App() {
 
   return (
     <>
+      <Sequencer audioContext={audioContext} />
       {keys.map((keyObj) => (
         <Note
           key={keyObj.name}
