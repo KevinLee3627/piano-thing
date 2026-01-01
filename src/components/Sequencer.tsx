@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 
 interface SequencerProps {
@@ -17,14 +17,19 @@ interface BlockProps {
 }
 
 const Block = (props: BlockProps) => {
-  const noteWidth =
-    (props.duration / props.trackLength) * props.trackDimensions.width;
-
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
   const [left, setLeft] = useState(
     (props.startTime / props.trackLength) * props.trackDimensions.width
   );
+
+  const [dims, setDims] = useState({
+    noteWidth:
+      (props.duration / props.trackLength) * props.trackDimensions.width,
+    maxLeft:
+      props.trackDimensions.width -
+      (props.duration / props.trackLength) * props.trackDimensions.width,
+  });
 
   // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
   // resize observer? This also updates block positions when screen or track is resized.
@@ -32,6 +37,14 @@ const Block = (props: BlockProps) => {
     setLeft(
       (props.startTime / props.trackLength) * props.trackDimensions.width
     );
+
+    const newNoteWidth =
+      (props.duration / props.trackLength) * props.trackDimensions.width;
+
+    setDims({
+      maxLeft: props.trackDimensions.width - newNoteWidth,
+      noteWidth: newNoteWidth,
+    });
   }, [props.trackDimensions, props.trackLength]);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -40,7 +53,7 @@ const Block = (props: BlockProps) => {
     <div
       ref={ref}
       style={{
-        width: `${noteWidth}px`,
+        width: `${dims.noteWidth}px`,
         height: '100%',
         left: `${left}px`,
         position: 'absolute',
@@ -68,10 +81,9 @@ const Block = (props: BlockProps) => {
       onPointerMove={(e) => {
         if (ref.current == null) return;
         if (pointerIsPressed) {
-          const maxLeft = props.trackDimensions.width - ref.current.offsetWidth;
           // NOTE: Constrains block dragging to start and end of the track
           setLeft(
-            Math.max(Math.min(e.clientX - ref.current.offsetWidth, maxLeft), 0)
+            Math.max(Math.min(e.clientX - dims.noteWidth, dims.maxLeft), 0)
           );
         }
       }}
@@ -130,6 +142,15 @@ export const Sequencer = (props: SequencerProps) => {
       };
     });
   };
+
+  useEffect(() => {
+    setBlocks((blocks) => {
+      for (const key of Object.keys(blocks)) {
+        blocks[key].trackDimensions = trackDimensions;
+      }
+      return blocks;
+    });
+  }, [trackDimensions]);
 
   return (
     <div>
