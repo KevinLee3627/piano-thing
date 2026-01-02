@@ -3,6 +3,7 @@ import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import { Block } from './Block';
+import { Keyboard } from './Keyboard';
 
 interface SequencerProps {
   audioContext: AudioContext;
@@ -40,44 +41,46 @@ export const Sequencer = (props: SequencerProps) => {
   };
 
   return (
-    <div>
+    <div style={{ height: '100%' }}>
       <div>
-        Track: {trackDimensions.width}px x {trackDimensions.height}px
+        <p>
+          Track: {trackDimensions.width}px x {trackDimensions.height}px
+        </p>
+        <button onClick={playTrack}>play</button>
+        <button
+          onClick={() =>
+            dispatch(
+              trackSlice.actions.addBlock({
+                startTime: 0,
+                duration: 1,
+                frequency: 440,
+                gain: 1,
+                dims: {
+                  left: (0 / trackLength) * trackDimensions.width,
+                  width: (1 / trackLength) * trackDimensions.width,
+                  maxLeft:
+                    trackDimensions.width -
+                    (1 / trackLength) * trackDimensions.width,
+                },
+              })
+            )
+          }
+        >
+          add block
+        </button>
+        <input
+          type='number'
+          step={0.01}
+          value={trackLength}
+          onChange={(e) => {
+            setTrackLength(Number(e.target.value));
+          }}
+        />
       </div>
-      <button onClick={playTrack}>play</button>
-      <button
-        onClick={() =>
-          dispatch(
-            trackSlice.actions.addBlock({
-              startTime: 0,
-              duration: 1,
-              frequency: 440,
-              gain: 1,
-              dims: {
-                left: (0 / trackLength) * trackDimensions.width,
-                width: (1 / trackLength) * trackDimensions.width,
-                maxLeft:
-                  trackDimensions.width -
-                  (1 / trackLength) * trackDimensions.width,
-              },
-            })
-          )
-        }
-      >
-        add block
-      </button>
-      <input
-        type='number'
-        step={0.01}
-        value={trackLength}
-        onChange={(e) => {
-          setTrackLength(Number(e.target.value));
-        }}
-      />
       <div
         ref={trackRef}
         style={{
-          height: '250px',
+          height: '60%',
           width: '80%',
           margin: '0 auto',
           border: '1px solid black',
@@ -93,6 +96,7 @@ export const Sequencer = (props: SequencerProps) => {
           />
         ))}
       </div>
+      <Keyboard />
     </div>
   );
 };
