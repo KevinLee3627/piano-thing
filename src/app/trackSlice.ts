@@ -23,11 +23,6 @@ const initialState: TrackState = {
   blocks: {},
 };
 
-const DEFAULT_START_TIME = 0;
-const DEFAULT_DURATION = 1;
-const DEFAULT_FREQUENCY = 440;
-const DEFAULT_GAIN = 1;
-
 export const trackSlice = createSlice({
   name: 'track',
   initialState,

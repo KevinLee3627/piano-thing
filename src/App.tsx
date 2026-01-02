@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 
-import { Note } from './components/Note';
 import { Sequencer } from './components/Sequencer';
 
 function App() {
