@@ -19,35 +19,29 @@ interface BlockProps {
 
 const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
-
-  const [pointerIsPressed, setPointerIsPressed] = useState(false);
-
-  const [left, setLeft] = useState(
-    (props.startTime / props.trackLength) * props.trackDimensions.width
+  const blockInfo = useAppSelector(
+    (state) => state.tracks.blocks[props.blockId]
   );
 
-  const [dims, setDims] = useState({
-    noteWidth:
-      (props.duration / props.trackLength) * props.trackDimensions.width,
-    maxLeft:
-      props.trackDimensions.width -
-      (props.duration / props.trackLength) * props.trackDimensions.width,
-  });
+  const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
   // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
-    setLeft(
-      (props.startTime / props.trackLength) * props.trackDimensions.width
-    );
-
-    const newNoteWidth =
+    const newLeft =
+      (props.startTime / props.trackLength) * props.trackDimensions.width;
+    const blockWidth =
       (props.duration / props.trackLength) * props.trackDimensions.width;
-
-    setDims({
-      maxLeft: props.trackDimensions.width - newNoteWidth,
-      noteWidth: newNoteWidth,
-    });
+    dispatch(
+      trackSlice.actions.editBlock({
+        blockId: props.blockId,
+        dims: {
+          left: newLeft,
+          width: blockWidth,
+          maxLeft: props.trackDimensions.width - blockWidth,
+        },
+      })
+    );
   }, [props.trackDimensions, props.trackLength]);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -56,9 +50,9 @@ const Block = (props: BlockProps) => {
     <div
       ref={ref}
       style={{
-        width: `${dims.noteWidth}px`,
+        width: `${blockInfo.dims.width}px`,
         height: '100%',
-        left: `${left}px`,
+        left: `${blockInfo.dims.left}px`,
         position: 'absolute',
         backgroundColor: pointerIsPressed ? 'red' : 'green',
       }}
@@ -72,7 +66,8 @@ const Block = (props: BlockProps) => {
       onPointerUp={() => {
         setPointerIsPressed(false);
         const newStartTime =
-          (left / props.trackDimensions.width) * props.trackLength;
+          (blockInfo.dims.left / props.trackDimensions.width) *
+          props.trackLength;
         dispatch(
           trackSlice.actions.editBlock({
             blockId: props.blockId,
@@ -84,8 +79,21 @@ const Block = (props: BlockProps) => {
         if (ref.current == null) return;
         if (pointerIsPressed) {
           // NOTE: Constrains block dragging to start and end of the track
-          setLeft(
-            Math.max(Math.min(e.clientX - dims.noteWidth, dims.maxLeft), 0)
+          const newLeft = Math.max(
+            Math.min(e.clientX - blockInfo.dims.width, blockInfo.dims.maxLeft),
+            0
+          );
+          const blockWidth =
+            (props.duration / props.trackLength) * props.trackDimensions.width;
+          dispatch(
+            trackSlice.actions.editBlock({
+              blockId: props.blockId,
+              dims: {
+                left: newLeft,
+                width: blockWidth,
+                maxLeft: props.trackDimensions.width - blockWidth,
+              },
+            })
           );
         }
       }}
@@ -132,7 +140,25 @@ export const Sequencer = (props: SequencerProps) => {
         Track: {trackDimensions.width}px x {trackDimensions.height}px
       </div>
       <button onClick={playTrack}>play</button>
-      <button onClick={() => dispatch(trackSlice.actions.addBlock())}>
+      <button
+        onClick={() =>
+          dispatch(
+            trackSlice.actions.addBlock({
+              startTime: 0,
+              duration: 1,
+              frequency: 440,
+              gain: 1,
+              dims: {
+                left: (0 / trackLength) * trackDimensions.width,
+                width: (1 / trackLength) * trackDimensions.width,
+                maxLeft:
+                  trackDimensions.width -
+                  (1 / trackLength) * trackDimensions.width,
+              },
+            })
+          )
+        }
+      >
         add block
       </button>
       <input
