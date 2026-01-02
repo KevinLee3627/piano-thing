@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { trackSlice } from '../app/trackSlice';
 
 interface SequencerProps {
   audioContext: AudioContext;
@@ -13,10 +15,11 @@ interface BlockProps {
   gain: number;
   trackDimensions: { width: number; height: number };
   trackLength: number; // in seconds
-  setBlocks: React.Dispatch<React.SetStateAction<Record<string, BlockProps>>>;
 }
 
 const Block = (props: BlockProps) => {
+  const dispatch = useAppDispatch();
+
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
   const [left, setLeft] = useState(
@@ -68,15 +71,14 @@ const Block = (props: BlockProps) => {
       }}
       onPointerUp={() => {
         setPointerIsPressed(false);
-        props.setBlocks((blocks) => {
-          const selectedBlock = blocks[props.blockId];
-          const newStartTime =
-            (left / props.trackDimensions.width) * props.trackLength;
-          return {
-            ...blocks,
-            [props.blockId]: { ...selectedBlock, startTime: newStartTime },
-          };
-        });
+        const newStartTime =
+          (left / props.trackDimensions.width) * props.trackLength;
+        dispatch(
+          trackSlice.actions.editBlock({
+            blockId: props.blockId,
+            startTime: newStartTime,
+          })
+        );
       }}
       onPointerMove={(e) => {
         if (ref.current == null) return;
@@ -94,9 +96,10 @@ const Block = (props: BlockProps) => {
 };
 
 export const Sequencer = (props: SequencerProps) => {
-  const [blocks, setBlocks] = useState<Record<string, BlockProps>>({});
   const [trackLength, setTrackLength] = useState(5); // secs
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
+  const dispatch = useAppDispatch();
+  const blocks = useAppSelector((state) => state.tracks.blocks);
 
   const playTrack = () => {
     Object.values(blocks).forEach((note) => {
@@ -123,42 +126,15 @@ export const Sequencer = (props: SequencerProps) => {
     });
   };
 
-  const addBlock = () => {
-    const newBlockId = crypto.randomUUID();
-    const newBlock: BlockProps = {
-      blockId: newBlockId,
-      startTime: 0,
-      duration: 1,
-      frequency: 440,
-      gain: 1,
-      trackDimensions,
-      trackLength,
-      setBlocks,
-    };
-    setBlocks((blocks) => {
-      return {
-        ...blocks,
-        [newBlockId]: newBlock,
-      };
-    });
-  };
-
-  useEffect(() => {
-    setBlocks((blocks) => {
-      for (const key of Object.keys(blocks)) {
-        blocks[key].trackDimensions = trackDimensions;
-      }
-      return blocks;
-    });
-  }, [trackDimensions]);
-
   return (
     <div>
       <div>
         Track: {trackDimensions.width}px x {trackDimensions.height}px
       </div>
       <button onClick={playTrack}>play</button>
-      <button onClick={addBlock}>add block</button>
+      <button onClick={() => dispatch(trackSlice.actions.addBlock())}>
+        add block
+      </button>
       <input
         type='number'
         step={0.01}
@@ -178,7 +154,12 @@ export const Sequencer = (props: SequencerProps) => {
         }}
       >
         {Object.entries(blocks).map(([blockId, block]) => (
-          <Block key={blockId} {...block} />
+          <Block
+            key={blockId}
+            {...block}
+            trackDimensions={trackDimensions}
+            trackLength={trackLength}
+          />
         ))}
       </div>
     </div>
