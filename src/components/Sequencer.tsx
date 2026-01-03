@@ -13,11 +13,11 @@ const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
 
 export const Sequencer = (props: SequencerProps) => {
-  const [trackLength, setTrackLength] = useState(5); // secs
+  const trackStartTime = useRef(props.audioContext.currentTime);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [trackLength, setTrackLength] = useState(3); // secs
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
   const blocks = useAppSelector((state) => state.tracks.blocks);
-
-  const msPrev = useRef(window.performance.now());
 
   const playTrack = () => {
     Object.values(blocks).forEach((note) => {
@@ -45,19 +45,23 @@ export const Sequencer = (props: SequencerProps) => {
   };
 
   const animationRef = useRef<number>(null);
-  const [currentTime, setCurrentTime] = useState(0);
+  const msPrev = useRef(props.audioContext.currentTime);
   const updateUITime = () => {
     if (props.audioContext == null) return;
 
-    const msNow = window.performance.now();
-    const msPassed = msNow - msPrev.current;
+    const msNow = props.audioContext.currentTime;
+    const msPassed = (msNow - msPrev.current) * 1000;
+    const currentPlaybackTime =
+      props.audioContext.currentTime - trackStartTime.current;
 
     if (msPassed > MS_PER_FRAME) {
-      setCurrentTime(props.audioContext.currentTime);
+      setPlaybackTime(currentPlaybackTime);
       msPrev.current = msNow;
     }
 
-    if (props.audioContext.currentTime >= trackLength) {
+    // NOTE: We calculate directly so we can stop at the correct time.
+    // Other places (like the check above) uses the stored state for UI/rendering purposes.
+    if (currentPlaybackTime >= trackLength) {
       stopUIUpdates();
       return;
     }
@@ -67,7 +71,8 @@ export const Sequencer = (props: SequencerProps) => {
 
   const startPlaybackAndUIUpdates = () => {
     if (Object.keys(blocks).length === 0) return;
-
+    setPlaybackTime(0);
+    trackStartTime.current = props.audioContext.currentTime;
     playTrack();
     animationRef.current = requestAnimationFrame(updateUITime);
   };
@@ -76,7 +81,6 @@ export const Sequencer = (props: SequencerProps) => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
-    props.audioContext.suspend();
   };
 
   useEffect(() => {
@@ -91,7 +95,7 @@ export const Sequencer = (props: SequencerProps) => {
         <p>
           Track: {trackDimensions.width}px x {trackDimensions.height}px
         </p>
-        <p>{currentTime}</p>
+        <p>start: {playbackTime}</p>
         <button onClick={startPlaybackAndUIUpdates}>play</button>
         <input
           type='number'
@@ -116,7 +120,7 @@ export const Sequencer = (props: SequencerProps) => {
           <Playhead
             trackDimensions={trackDimensions}
             trackLength={trackLength}
-            currentTime={currentTime}
+            currentTime={playbackTime}
           />
           {Object.entries(blocks).map(([blockId, block]) => (
             <Block

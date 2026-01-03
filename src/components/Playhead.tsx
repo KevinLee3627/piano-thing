@@ -5,6 +5,7 @@ interface PlayheadProps {
 }
 
 export const Playhead = (props: PlayheadProps) => {
+  console.log('plyhead playbacktime', props.currentTime);
   return (
     <div
       style={{
