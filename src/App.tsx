@@ -9,10 +9,6 @@ function App() {
   return (
     <GlobalAudioContextProvider>
       <div>
-        {/* <p>Playing? {project.isPlaying ? 'Yerp' : 'Nope'}</p> */}
-        {/* <button onClick={() => dispatch(projectSlice.actions.startPlayback())}>
-          play track(s)
-        </button> */}
         <button
           onClick={() => {
             Object.values(tracks).forEach((track) =>
