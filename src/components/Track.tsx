@@ -109,7 +109,6 @@ export const Track = (props: TrackProps) => {
         margin: '0 auto',
       }}
     >
-      <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
       <div
         style={{
           height: '50%',
@@ -118,6 +117,7 @@ export const Track = (props: TrackProps) => {
         }}
         ref={trackRef}
       >
+        <TickMarks num={10} trackElemWidth={trackDimensions.width} />
         <Playhead
           trackDimensions={trackDimensions}
           currentTime={playbackTime}
@@ -131,7 +131,40 @@ export const Track = (props: TrackProps) => {
           />
         ))}
       </div>
+      <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
       <Keyboard trackId={props.trackId} />
+    </div>
+  );
+};
+
+interface TickMarksProps {
+  num: number;
+  trackElemWidth: number;
+}
+
+const TickMarks = (props: TickMarksProps) => {
+  const project = useAppSelector((state) => state.project);
+
+  return (
+    <div>
+      {Array.from({ length: props.num })
+        .fill(0)
+        .map((_, i) => {
+          const left = props.trackElemWidth * (i / props.num);
+          return (
+            <div
+              key={`tick-${i}`}
+              style={{
+                border: '1px dashed blue',
+                position: 'absolute',
+                left: `${left}px`,
+                top: '-1.25rem',
+              }}
+            >
+              {(i / props.num) * project.totalDuration}
+            </div>
+          );
+        })}
     </div>
   );
 };

@@ -16,7 +16,7 @@ export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
   const blockInfo = useAppSelector(
-    (state) => state.tracks[props.trackId].blocks[props.blockId]
+    (state) => state.tracks[props.trackId].blocks[props.blockId] // TODO: Do we need props at all?
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
