@@ -1,19 +1,26 @@
-import { useRef } from 'react';
-
 import { Sequencer } from './components/Sequencer';
+import { useAppDispatch, useAppSelector } from './app/hooks';
+import { GlobalAudioContextProvider } from './context/audioContext';
+import { trackSlice } from './app/trackSlice';
 
 function App() {
-  const audioContextRef = useRef<AudioContext>(null);
-  if (audioContextRef.current == null) {
-    audioContextRef.current = new AudioContext();
-  }
-
-  const audioContext = audioContextRef.current;
+  const dispatch = useAppDispatch();
+  const tracks = useAppSelector((state) => state.tracks);
+  console.log(tracks);
 
   return (
-    <>
-      <Sequencer audioContext={audioContext} />
-    </>
+    <GlobalAudioContextProvider>
+      <div>
+        <button onClick={() => dispatch(trackSlice.actions.addTrack())}>
+          add track
+        </button>
+      </div>
+      <div style={{ height: '40%' }}>
+        {Object.keys(tracks).map((trackId) => {
+          return <Sequencer trackId={trackId} key={trackId} />;
+        })}
+      </div>
+    </GlobalAudioContextProvider>
   );
 }
 
