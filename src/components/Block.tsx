@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 
 interface BlockProps {
+  trackId: string;
   blockId: string;
   startTime: number;
   duration: number;
@@ -15,7 +16,7 @@ interface BlockProps {
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
   const blockInfo = useAppSelector(
-    (state) => state.tracks.blocks[props.blockId]
+    (state) => state.tracks[props.trackId].blocks[props.blockId]
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
@@ -29,6 +30,7 @@ export const Block = (props: BlockProps) => {
       (props.duration / props.trackLength) * props.trackDimensions.width;
     dispatch(
       trackSlice.actions.editBlock({
+        trackId: props.trackId,
         blockId: props.blockId,
         dims: {
           left: newLeft,
@@ -65,6 +67,7 @@ export const Block = (props: BlockProps) => {
           props.trackLength;
         dispatch(
           trackSlice.actions.editBlock({
+            trackId: props.trackId,
             blockId: props.blockId,
             startTime: newStartTime,
           })
@@ -82,6 +85,7 @@ export const Block = (props: BlockProps) => {
             (props.duration / props.trackLength) * props.trackDimensions.width;
           dispatch(
             trackSlice.actions.editBlock({
+              trackId: props.trackId,
               blockId: props.blockId,
               dims: {
                 left: newLeft,

@@ -18,6 +18,7 @@ interface Block {
 interface Track {
   trackId: string;
   blocks: Record<string, Block>;
+  isPlaying: boolean;
 }
 
 export type TrackState = Record<string, Track>;
@@ -27,6 +28,7 @@ const initialState: TrackState = {
   [initialTrackID]: {
     trackId: initialTrackID,
     blocks: {},
+    isPlaying: false,
   },
 };
 
@@ -39,7 +41,14 @@ export const trackSlice = createSlice({
       state[newTrackId] = {
         trackId: newTrackId,
         blocks: {},
+        isPlaying: false,
       };
+    },
+    startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+      state[action.payload.trackId].isPlaying = true;
+    },
+    stopTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+      state[action.payload.trackId].isPlaying = false;
     },
     addBlock: (
       state,

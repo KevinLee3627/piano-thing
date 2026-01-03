@@ -2,7 +2,7 @@ import { useAppDispatch } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import { getNoteFreqByName, noteMapping } from '../util/noteUtils';
 
-export const Keyboard = () => {
+export const Keyboard = ({ trackId }: { trackId: string }) => {
   const dispatch = useAppDispatch();
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -18,6 +18,7 @@ export const Keyboard = () => {
             onClick={() => {
               dispatch(
                 trackSlice.actions.addBlock({
+                  trackId,
                   startTime: 0,
                   duration: 1,
                   frequency: getNoteFreqByName(`${note}4`),

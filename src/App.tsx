@@ -6,11 +6,24 @@ import { trackSlice } from './app/trackSlice';
 function App() {
   const dispatch = useAppDispatch();
   const tracks = useAppSelector((state) => state.tracks);
-  console.log(tracks);
-
   return (
     <GlobalAudioContextProvider>
       <div>
+        {/* <p>Playing? {project.isPlaying ? 'Yerp' : 'Nope'}</p> */}
+        {/* <button onClick={() => dispatch(projectSlice.actions.startPlayback())}>
+          play track(s)
+        </button> */}
+        <button
+          onClick={() => {
+            Object.values(tracks).forEach((track) =>
+              dispatch(
+                trackSlice.actions.startTrack({ trackId: track.trackId })
+              )
+            );
+          }}
+        >
+          play all these tracks :D
+        </button>
         <button onClick={() => dispatch(trackSlice.actions.addTrack())}>
           add track
         </button>
