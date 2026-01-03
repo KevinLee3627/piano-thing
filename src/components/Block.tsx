@@ -10,11 +10,11 @@ interface BlockProps {
   frequency: number;
   gain: number;
   trackDimensions: { width: number; height: number };
-  trackLength: number; // in seconds
 }
 
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
+  const project = useAppSelector((state) => state.project);
   const blockInfo = useAppSelector(
     (state) => state.tracks[props.trackId].blocks[props.blockId]
   );
@@ -25,9 +25,9 @@ export const Block = (props: BlockProps) => {
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
     const newLeft =
-      (props.startTime / props.trackLength) * props.trackDimensions.width;
+      (props.startTime / project.totalDuration) * props.trackDimensions.width;
     const blockWidth =
-      (props.duration / props.trackLength) * props.trackDimensions.width;
+      (props.duration / project.totalDuration) * props.trackDimensions.width;
     dispatch(
       trackSlice.actions.editBlock({
         trackId: props.trackId,
@@ -39,7 +39,7 @@ export const Block = (props: BlockProps) => {
         },
       })
     );
-  }, [props.trackDimensions, props.trackLength]);
+  }, [props.trackDimensions, project.totalDuration]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -64,7 +64,7 @@ export const Block = (props: BlockProps) => {
         setPointerIsPressed(false);
         const newStartTime =
           (blockInfo.dims.left / props.trackDimensions.width) *
-          props.trackLength;
+          project.totalDuration;
         dispatch(
           trackSlice.actions.editBlock({
             trackId: props.trackId,
@@ -82,7 +82,8 @@ export const Block = (props: BlockProps) => {
             0
           );
           const blockWidth =
-            (props.duration / props.trackLength) * props.trackDimensions.width;
+            (props.duration / project.totalDuration) *
+            props.trackDimensions.width;
           dispatch(
             trackSlice.actions.editBlock({
               trackId: props.trackId,

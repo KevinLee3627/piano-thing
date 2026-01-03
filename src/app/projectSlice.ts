@@ -2,10 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 interface ProjectState {
   isPlaying: boolean;
+  totalDuration: number;
 }
 
 const initialState: ProjectState = {
   isPlaying: false,
+  totalDuration: 5, // seconds
 };
 
 export const projectSlice = createSlice({

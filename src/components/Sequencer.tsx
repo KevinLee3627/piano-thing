@@ -18,9 +18,10 @@ export const Sequencer = (props: TrackProps) => {
   const audioContext = useGlobalAudioContext();
   const dispatch = useAppDispatch();
 
+  const project = useAppSelector((state) => state.project);
+
   const trackStartTime = useRef(audioContext.currentTime);
   const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
-  const [trackLength, setTrackLength] = useState(3); // secs
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
@@ -66,7 +67,7 @@ export const Sequencer = (props: TrackProps) => {
 
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
-    if (currentPlaybackTime >= trackLength) {
+    if (currentPlaybackTime >= project.totalDuration) {
       stopUIUpdates();
       return;
     }
@@ -119,7 +120,6 @@ export const Sequencer = (props: TrackProps) => {
       >
         <Playhead
           trackDimensions={trackDimensions}
-          trackLength={trackLength}
           currentTime={playbackTime}
         />
         {Object.entries(track.blocks).map(([blockId, block]) => (
@@ -128,7 +128,6 @@ export const Sequencer = (props: TrackProps) => {
             trackId={props.trackId}
             {...block}
             trackDimensions={trackDimensions}
-            trackLength={trackLength}
           />
         ))}
       </div>

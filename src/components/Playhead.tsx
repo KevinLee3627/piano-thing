@@ -1,10 +1,12 @@
+import { useAppSelector } from '../app/hooks';
+
 interface PlayheadProps {
   trackDimensions: { width: number; height: number };
-  trackLength: number; // in seconds
   currentTime: number;
 }
 
 export const Playhead = (props: PlayheadProps) => {
+  const project = useAppSelector((state) => state.project);
   return (
     <div
       style={{
@@ -14,7 +16,8 @@ export const Playhead = (props: PlayheadProps) => {
         color: 'white',
         position: 'absolute',
         left: `${
-          (props.currentTime / props.trackLength) * props.trackDimensions.width
+          (props.currentTime / project.totalDuration) *
+          props.trackDimensions.width
         }px`,
         top: '-10px',
       }}
