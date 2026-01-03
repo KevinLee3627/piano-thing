@@ -14,7 +14,7 @@ interface TrackProps {
   trackId: string;
 }
 
-export const Sequencer = (props: TrackProps) => {
+export const Track = (props: TrackProps) => {
   const audioContext = useGlobalAudioContext();
   const dispatch = useAppDispatch();
 

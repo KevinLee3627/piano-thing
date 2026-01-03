@@ -1,4 +1,4 @@
-import { Sequencer } from './components/Sequencer';
+import { Track } from './components/Track';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { GlobalAudioContextProvider } from './context/audioContext';
 import { trackSlice } from './app/trackSlice';
@@ -26,7 +26,7 @@ function App() {
       </div>
       <div style={{ height: '40%' }}>
         {Object.keys(tracks).map((trackId) => {
-          return <Sequencer trackId={trackId} key={trackId} />;
+          return <Track trackId={trackId} key={trackId} />;
         })}
       </div>
     </GlobalAudioContextProvider>
