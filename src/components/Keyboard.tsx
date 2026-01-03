@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { useAppDispatch } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import { getNoteFreqByName, noteMapping } from '../util/noteUtils';
 
@@ -25,7 +25,7 @@ export const Keyboard = () => {
                   dims: {
                     left: 0,
                     maxLeft: 0,
-                    width: 100,
+                    width: 0,
                   },
                 })
               );
