@@ -7,6 +7,8 @@ interface PlayheadProps {
 
 export const Playhead = (props: PlayheadProps) => {
   const project = useAppSelector((state) => state.project);
+  const left =
+    (props.currentTime / project.totalDuration) * props.trackDimensions.width;
   return (
     <div
       style={{
@@ -15,10 +17,7 @@ export const Playhead = (props: PlayheadProps) => {
         backgroundColor: 'red',
         color: 'white',
         position: 'absolute',
-        left: `${
-          (props.currentTime / project.totalDuration) *
-          props.trackDimensions.width
-        }px`,
+        left: `${left}px`,
         top: '-10px',
       }}
     ></div>

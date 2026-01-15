@@ -8,7 +8,7 @@ function App() {
   const tracks = useAppSelector((state) => state.tracks);
   return (
     <GlobalAudioContextProvider>
-      <div>
+      <div style={{ marginBottom: '3rem' }}>
         <button
           onClick={() => {
             Object.values(tracks).forEach((track) =>
