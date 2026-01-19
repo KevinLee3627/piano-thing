@@ -26,20 +26,20 @@ export const Track = (props: TrackProps) => {
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
-    Object.values(track.blocks).forEach((note) => {
-      const startTime = audioContext.currentTime + note.startTime;
-      const duration = note.duration;
+    Object.values(track.blocks).forEach((block) => {
+      const startTime = audioContext.currentTime + block.startTime;
+      const duration = block.duration;
 
       const oscillatorNode = audioContext.createOscillator();
       oscillatorNode.type = 'sine';
       oscillatorNode.frequency.setValueAtTime(
-        note.frequency,
-        audioContext.currentTime
+        block.frequency,
+        audioContext.currentTime,
       );
 
       const gainNode = audioContext.createGain();
 
-      gainNode.gain.setValueAtTime(note.gain, startTime);
+      gainNode.gain.setValueAtTime(block.gain, startTime);
       gainNode.gain.linearRampToValueAtTime(0.01, startTime + duration);
 
       oscillatorNode.connect(gainNode);
@@ -101,12 +101,15 @@ export const Track = (props: TrackProps) => {
     };
   }, []);
 
+  // TODO: Implement scrolling by having like a 'frame' and 'window' setup - where the 'window'
+  // is really long but hidden by the 'frame', and we jnust scroll horizontally
   return (
     <div
       style={{
         height: '100%',
         width: '80%',
         margin: '0 auto',
+        overflowX: 'scroll',
       }}
     >
       <div
@@ -114,10 +117,10 @@ export const Track = (props: TrackProps) => {
           height: '50%',
           border: '1px solid black',
           position: 'relative',
+          width: `${project.pxPerSecScale * project.totalDuration}px`,
         }}
         ref={trackRef}
       >
-        <TickMarks num={10} trackElemWidth={trackDimensions.width} />
         <Playhead
           trackDimensions={trackDimensions}
           currentTime={playbackTime}
@@ -146,7 +149,7 @@ const TickMarks = (props: TickMarksProps) => {
   const project = useAppSelector((state) => state.project);
 
   return (
-    <div>
+    <div style={{ position: 'relative', height: '1rem' }}>
       {Array.from({ length: props.num })
         .fill(0)
         .map((_, i) => {

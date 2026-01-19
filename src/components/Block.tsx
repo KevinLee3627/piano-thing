@@ -16,7 +16,7 @@ export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
   const blockInfo = useAppSelector(
-    (state) => state.tracks[props.trackId].blocks[props.blockId] // TODO: Do we need props at all?
+    (state) => state.tracks[props.trackId].blocks[props.blockId], // TODO: Do we need props at all?
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
@@ -25,9 +25,8 @@ export const Block = (props: BlockProps) => {
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
     const newLeft =
-      (props.startTime / project.totalDuration) * props.trackDimensions.width;
-    const blockWidth =
-      (props.duration / project.totalDuration) * props.trackDimensions.width;
+      (props.startTime / project.totalDuration) * project.pxPerSecScale;
+    const blockWidth = props.duration * project.pxPerSecScale;
     dispatch(
       trackSlice.actions.editBlock({
         trackId: props.trackId,
@@ -35,11 +34,11 @@ export const Block = (props: BlockProps) => {
         dims: {
           left: newLeft,
           width: blockWidth,
-          maxLeft: props.trackDimensions.width - blockWidth,
+          maxLeft: project.totalDuration * project.pxPerSecScale,
         },
-      })
+      }),
     );
-  }, [props.trackDimensions, project.totalDuration]);
+  }, [project.totalDuration]);
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -65,12 +64,13 @@ export const Block = (props: BlockProps) => {
         const newStartTime =
           (blockInfo.dims.left / props.trackDimensions.width) *
           project.totalDuration;
+
         dispatch(
           trackSlice.actions.editBlock({
             trackId: props.trackId,
             blockId: props.blockId,
             startTime: newStartTime,
-          })
+          }),
         );
       }}
       onPointerMove={(e) => {
@@ -79,11 +79,9 @@ export const Block = (props: BlockProps) => {
           // NOTE: Constrains block dragging to start and end of the track
           const newLeft = Math.max(
             Math.min(e.clientX - blockInfo.dims.width, blockInfo.dims.maxLeft),
-            0
+            0,
           );
-          const blockWidth =
-            (props.duration / project.totalDuration) *
-            props.trackDimensions.width;
+          const blockWidth = props.duration * project.pxPerSecScale;
           dispatch(
             trackSlice.actions.editBlock({
               trackId: props.trackId,
@@ -91,14 +89,18 @@ export const Block = (props: BlockProps) => {
               dims: {
                 left: newLeft,
                 width: blockWidth,
-                maxLeft: props.trackDimensions.width - blockWidth,
+                maxLeft:
+                  project.totalDuration * project.pxPerSecScale - blockWidth,
               },
-            })
+            }),
           );
         }
       }}
     >
-      <p>{props.blockId.slice(0, 4)}</p>
+      <p>{props.blockId.slice(0, 4)} -</p>
+      <p>left: {blockInfo.dims.left} </p>
+      <p>trackwiddth: {props.trackDimensions.width}</p>
+      <p>start {blockInfo.startTime}s</p>
     </div>
   );
 };
