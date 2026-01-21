@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
+import type { useResizeObserver } from '../hooks/useResizeObserver';
 
 interface BlockProps {
   trackId: string;
@@ -9,7 +10,7 @@ interface BlockProps {
   duration: number;
   frequency: number;
   gain: number;
-  trackDimensions: { width: number; height: number };
+  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
 export const Block = (props: BlockProps) => {
@@ -25,8 +26,8 @@ export const Block = (props: BlockProps) => {
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
     const newLeft =
-      (props.startTime / project.totalDuration) * project.pxPerSecScale;
-    const blockWidth = props.duration * project.pxPerSecScale;
+      (props.startTime / project.totalDuration) * project.pxPerSecondScale;
+    const blockWidth = props.duration * project.pxPerSecondScale;
     dispatch(
       trackSlice.actions.editBlock({
         trackId: props.trackId,
@@ -34,17 +35,17 @@ export const Block = (props: BlockProps) => {
         dims: {
           left: newLeft,
           width: blockWidth,
-          maxLeft: project.totalDuration * project.pxPerSecScale,
+          maxLeft: project.totalDuration * project.pxPerSecondScale,
         },
       }),
     );
   }, [project.totalDuration]);
 
-  const ref = useRef<HTMLDivElement>(null);
+  const blockRef = useRef<HTMLDivElement>(null);
 
   return (
     <div
-      ref={ref}
+      ref={blockRef}
       style={{
         width: `${blockInfo.dims.width}px`,
         height: '100%',
@@ -53,9 +54,9 @@ export const Block = (props: BlockProps) => {
         backgroundColor: pointerIsPressed ? 'red' : 'green',
       }}
       onPointerDown={(e) => {
-        if (ref.current != null) {
+        if (blockRef.current != null) {
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
-          ref.current.setPointerCapture(e.pointerId);
+          blockRef.current.setPointerCapture(e.pointerId);
           setPointerIsPressed(true);
         }
       }}
@@ -74,23 +75,25 @@ export const Block = (props: BlockProps) => {
         );
       }}
       onPointerMove={(e) => {
-        if (ref.current == null) return;
+        if (blockRef.current == null) return;
         if (pointerIsPressed) {
+          const newLeft =
+            e.clientX - props.trackDimensions.left - blockInfo.dims.width / 2;
           // NOTE: Constrains block dragging to start and end of the track
-          const newLeft = Math.max(
-            Math.min(e.clientX - blockInfo.dims.width, blockInfo.dims.maxLeft),
+          const constrainedNewLeft = Math.max(
+            Math.min(newLeft, blockInfo.dims.maxLeft),
             0,
           );
-          const blockWidth = props.duration * project.pxPerSecScale;
+          const blockWidth = props.duration * project.pxPerSecondScale;
           dispatch(
             trackSlice.actions.editBlock({
               trackId: props.trackId,
               blockId: props.blockId,
               dims: {
-                left: newLeft,
+                left: constrainedNewLeft,
                 width: blockWidth,
                 maxLeft:
-                  project.totalDuration * project.pxPerSecScale - blockWidth,
+                  project.totalDuration * project.pxPerSecondScale - blockWidth,
               },
             }),
           );

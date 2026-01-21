@@ -1,7 +1,8 @@
 import { useAppSelector } from '../app/hooks';
+import type { useResizeObserver } from '../hooks/useResizeObserver';
 
 interface PlayheadProps {
-  trackDimensions: { width: number; height: number };
+  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   currentTime: number;
 }
 

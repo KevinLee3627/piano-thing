@@ -3,13 +3,36 @@ import { createSlice } from '@reduxjs/toolkit';
 interface ProjectState {
   isPlaying: boolean;
   totalDuration: number;
-  pxPerSecScale: number;
+  pxPerSecondScale: number;
+  pxPerMeasureScale: number;
+  beatsPerMeasure: number;
+  secondsPerMeasure: number;
+  beatValue: number;
+  totalMeasures: number;
+  beatsPerMinute: number;
 }
+
+const DEFAULT_BEATS_PER_MEASURE = 4;
+const DEFAULT_TOTAL_MEASURES = 10;
+const DEFAULT_BEATS_PER_MINUTE = 120;
+const DEFAULT_TOTAL_DURATION =
+  (DEFAULT_BEATS_PER_MEASURE * DEFAULT_TOTAL_MEASURES) /
+  (DEFAULT_BEATS_PER_MINUTE / 60); // in seconds
+const DEFAULT_PX_PER_MEASURE_SCALE = 300;
+const DEFAULT_SECONDS_PER_MEASURE =
+  DEFAULT_TOTAL_DURATION / DEFAULT_TOTAL_MEASURES;
+const DEFAULT_BEAT_VALUE = 1 / 4;
 
 const initialState: ProjectState = {
   isPlaying: false,
-  totalDuration: 10, // seconds
-  pxPerSecScale: 300,
+  totalDuration: DEFAULT_TOTAL_DURATION, // seconds
+  pxPerMeasureScale: DEFAULT_PX_PER_MEASURE_SCALE,
+  pxPerSecondScale: DEFAULT_PX_PER_MEASURE_SCALE / DEFAULT_SECONDS_PER_MEASURE,
+  beatsPerMeasure: DEFAULT_BEATS_PER_MEASURE,
+  secondsPerMeasure: DEFAULT_SECONDS_PER_MEASURE,
+  beatValue: DEFAULT_BEAT_VALUE,
+  totalMeasures: DEFAULT_TOTAL_MEASURES,
+  beatsPerMinute: DEFAULT_BEATS_PER_MINUTE,
 };
 
 export const projectSlice = createSlice({

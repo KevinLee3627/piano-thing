@@ -4,9 +4,11 @@ export const useResizeObserver = () => {
   const [dimensions, setDimensions] = useState<{
     width: number;
     height: number;
+    left: number;
   }>({
     width: 0,
     height: 0,
+    left: 0,
   });
   const ref = useRef(null);
   useEffect(() => {
@@ -16,6 +18,7 @@ export const useResizeObserver = () => {
           setDimensions({
             width: entry.borderBoxSize[0].inlineSize,
             height: entry.borderBoxSize[0].blockSize,
+            left: entry.target.getBoundingClientRect().left,
           });
         }
       });

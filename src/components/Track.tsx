@@ -117,10 +117,11 @@ export const Track = (props: TrackProps) => {
           height: '50%',
           border: '1px solid black',
           position: 'relative',
-          width: `${project.pxPerSecScale * project.totalDuration}px`,
+          width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
         }}
         ref={trackRef}
       >
+        <TickMarks trackElemWidth={trackDimensions.width} />
         <Playhead
           trackDimensions={trackDimensions}
           currentTime={playbackTime}
@@ -141,7 +142,6 @@ export const Track = (props: TrackProps) => {
 };
 
 interface TickMarksProps {
-  num: number;
   trackElemWidth: number;
 }
 
@@ -150,10 +150,10 @@ const TickMarks = (props: TickMarksProps) => {
 
   return (
     <div style={{ position: 'relative', height: '1rem' }}>
-      {Array.from({ length: props.num })
+      {Array.from({ length: project.totalMeasures })
         .fill(0)
         .map((_, i) => {
-          const left = props.trackElemWidth * (i / props.num);
+          const left = props.trackElemWidth * (i / project.totalMeasures);
           return (
             <div
               key={`tick-${i}`}
@@ -161,10 +161,9 @@ const TickMarks = (props: TickMarksProps) => {
                 border: '1px dashed blue',
                 position: 'absolute',
                 left: `${left}px`,
-                top: '-1.25rem',
               }}
             >
-              {(i / props.num) * project.totalDuration}
+              {i}
             </div>
           );
         })}
