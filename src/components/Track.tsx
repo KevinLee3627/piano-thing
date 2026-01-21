@@ -6,6 +6,7 @@ import { Playhead } from './Playhead';
 import { useGlobalAudioContext } from '../context/audioContext';
 import { Keyboard } from './Keyboard';
 import { trackSlice } from '../app/trackSlice';
+import { TickMarks } from './TickMarks';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -137,36 +138,6 @@ export const Track = (props: TrackProps) => {
       </div>
       <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
       <Keyboard trackId={props.trackId} />
-    </div>
-  );
-};
-
-interface TickMarksProps {
-  trackElemWidth: number;
-}
-
-const TickMarks = (props: TickMarksProps) => {
-  const project = useAppSelector((state) => state.project);
-
-  return (
-    <div style={{ position: 'relative', height: '1rem' }}>
-      {Array.from({ length: project.totalMeasures })
-        .fill(0)
-        .map((_, i) => {
-          const left = props.trackElemWidth * (i / project.totalMeasures);
-          return (
-            <div
-              key={`tick-${i}`}
-              style={{
-                border: '1px dashed blue',
-                position: 'absolute',
-                left: `${left}px`,
-              }}
-            >
-              {i}
-            </div>
-          );
-        })}
     </div>
   );
 };
