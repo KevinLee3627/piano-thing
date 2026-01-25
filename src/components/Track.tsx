@@ -21,7 +21,6 @@ export const Track = (props: TrackProps) => {
 
   const project = useAppSelector((state) => state.project);
 
-  const trackStartTime = useRef(audioContext.currentTime);
   const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
   const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
   const track = useAppSelector((state) => state.tracks[props.trackId]);
@@ -58,34 +57,41 @@ export const Track = (props: TrackProps) => {
 
     const msNow = audioContext.currentTime;
     const msPassed = (msNow - msPrev.current) * 1000;
-    const currentPlaybackTime =
-      audioContext.currentTime - trackStartTime.current;
 
     if (msPassed > MS_PER_FRAME) {
-      setPlaybackTime(currentPlaybackTime);
+      setPlaybackTime(audioContext.currentTime);
       msPrev.current = msNow;
     }
 
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
-    if (currentPlaybackTime >= project.totalDuration) {
-      stopUIUpdates();
+    if (audioContext.currentTime >= project.totalDuration) {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
       return;
     }
 
     animationRef.current = requestAnimationFrame(updateUITime);
   };
 
-  const startPlaybackAndUIUpdates = () => {
+  const startPlaybackAndUIUpdates = async () => {
     if (Object.keys(track.blocks).length === 0) return;
-    setPlaybackTime(0);
-    trackStartTime.current = audioContext.currentTime;
-    playTrack();
+
+    if (playbackTime === 0) {
+      playTrack();
+    } else {
+      await audioContext.resume();
+    }
+
+    // Start RAF loop
     animationRef.current = requestAnimationFrame(updateUITime);
   };
 
-  const stopUIUpdates = () => {
+  const pause = async () => {
+    if (Object.keys(track.blocks).length === 0) return;
+
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    await audioContext.suspend();
     dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
   };
 
@@ -137,6 +143,7 @@ export const Track = (props: TrackProps) => {
         ))}
       </div>
       <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
+      <button onClick={pause}>pause</button>
       <Keyboard trackId={props.trackId} />
     </div>
   );
