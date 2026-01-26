@@ -18,11 +18,11 @@ interface TrackProps {
 export const Track = (props: TrackProps) => {
   const audioContext = useGlobalAudioContext();
   const dispatch = useAppDispatch();
-
   const project = useAppSelector((state) => state.project);
 
   const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
-  const { ref: trackRef, dimensions: trackDimensions } = useResizeObserver();
+  const { ref: trackRef, dimensions: trackDimensions } =
+    useResizeObserver<HTMLDivElement>();
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
@@ -59,15 +59,14 @@ export const Track = (props: TrackProps) => {
     const msPassed = (msNow - msPrev.current) * 1000;
 
     if (msPassed > MS_PER_FRAME) {
-      setPlaybackTime(audioContext.currentTime);
+      setPlaybackTime(msNow);
       msPrev.current = msNow;
     }
 
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
     if (audioContext.currentTime >= project.totalDuration) {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
+      stop();
       return;
     }
 
@@ -95,6 +94,11 @@ export const Track = (props: TrackProps) => {
     dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
   };
 
+  const stop = () => {
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
+  };
+
   // Triggered by button to play all tracksa t once
   useEffect(() => {
     if (track.isPlaying) {
@@ -113,7 +117,7 @@ export const Track = (props: TrackProps) => {
   return (
     <div
       style={{
-        height: '100%',
+        height: '50%',
         width: '80%',
         margin: '0 auto',
         overflowX: 'scroll',

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const useResizeObserver = () => {
+export const useResizeObserver = <T extends HTMLElement>() => {
   const [dimensions, setDimensions] = useState<{
     width: number;
     height: number;
@@ -10,7 +10,7 @@ export const useResizeObserver = () => {
     height: 0,
     left: 0,
   });
-  const ref = useRef(null);
+  const ref = useRef<T>(null);
   useEffect(() => {
     if (ref.current != null) {
       const observer = new ResizeObserver((entries) => {
