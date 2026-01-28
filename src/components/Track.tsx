@@ -115,14 +115,7 @@ export const Track = (props: TrackProps) => {
   // TODO: Implement scrolling by having like a 'frame' and 'window' setup - where the 'window'
   // is really long but hidden by the 'frame', and we jnust scroll horizontally
   return (
-    <div
-      style={{
-        height: '50%',
-        width: '80%',
-        margin: '0 auto',
-        overflowX: 'scroll',
-      }}
-    >
+    <>
       <div
         style={{
           height: '50%',
@@ -149,6 +142,6 @@ export const Track = (props: TrackProps) => {
       <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
       <button onClick={pause}>pause</button>
       <Keyboard trackId={props.trackId} />
-    </div>
+    </>
   );
 };

@@ -45,7 +45,15 @@ function App() {
           </button>
         </div>
 
-        <div style={{ flexGrow: 1 }}>
+        <div
+          style={{
+            flexGrow: 1,
+            height: '50%',
+            width: '80%',
+            margin: '0 auto',
+            overflowX: 'scroll',
+          }}
+        >
           {Object.keys(tracks).map((trackId) => {
             return <Track trackId={trackId} key={trackId} />;
           })}
