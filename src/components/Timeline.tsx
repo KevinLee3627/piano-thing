@@ -72,35 +72,19 @@ export function Timeline() {
     };
   }, []);
   return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div className='flex h-8'>
+    <div className='flex flex-col h-full'>
+      <div className='flex h-12'>
         <Button onClick={async () => await startPlaybackAndUIUpdates()}>
           play
         </Button>
         <button onClick={async () => await pause()}>pause</button>
       </div>
-      <div
-        style={{
-          flexGrow: 1,
-          height: '50%',
-          width: '80%',
-          margin: '0 auto',
-          overflowX: 'scroll',
-        }}
-      >
+      <div className='grow h-[50%] w-10/12 mx-auto my-0 overflow-x-scroll'>
         <div
           style={{
-            border: '1px solid black',
-            position: 'relative',
-            height: '50%',
             width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
           }}
+          className='border border-black relative h-1/2'
           ref={timelineRef}
         >
           <TickMarks trackElemWidth={timelineDimensions.width} />

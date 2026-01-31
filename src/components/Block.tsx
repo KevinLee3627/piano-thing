@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import type { useResizeObserver } from '../hooks/useResizeObserver';
+import { cn } from '@/lib/utils';
 
 interface BlockProps {
   trackId: string;
@@ -48,11 +49,12 @@ export const Block = (props: BlockProps) => {
       ref={blockRef}
       style={{
         width: `${blockInfo.dims.width}px`,
-        height: '100%',
         left: `${blockInfo.dims.left}px`,
-        position: 'absolute',
-        backgroundColor: pointerIsPressed ? 'red' : 'green',
       }}
+      className={cn(
+        'absolute',
+        pointerIsPressed ? 'bg-red-500' : 'bg-green-500',
+      )}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES

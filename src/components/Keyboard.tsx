@@ -6,16 +6,12 @@ export const Keyboard = ({ trackId }: { trackId: string }) => {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
   return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
+    <div className='justify-center flex'>
       {Object.keys(noteMapping).map((note) => {
         return (
           <div
             key={note}
-            style={{
-              height: '150px',
-              width: '50px',
-              border: '1px dashed black',
-            }}
+            className='w-12.5 h-37.5 border border-dashed border-black'
             onClick={() => {
               dispatch(
                 trackSlice.actions.addBlock({

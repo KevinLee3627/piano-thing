@@ -8,7 +8,7 @@ export const TickMarks = (props: TickMarksProps) => {
   const project = useAppSelector((state) => state.project);
 
   return (
-    <div style={{ position: 'relative', height: '1rem' }}>
+    <div className='h-4 relative'>
       {Array.from({ length: project.totalMeasures })
         .fill(0)
         .map((_, i) => {
@@ -16,11 +16,8 @@ export const TickMarks = (props: TickMarksProps) => {
           return (
             <div
               key={`tick-${i}`}
-              style={{
-                border: '1px dashed blue',
-                position: 'absolute',
-                left: `${left}px`,
-              }}
+              className='border border-dashed border-red-500 absolute'
+              style={{ left: `${left}px` }}
             >
               {i}
             </div>
