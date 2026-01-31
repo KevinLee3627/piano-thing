@@ -1,6 +1,14 @@
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { GlobalAudioContextProvider } from './context/audioContext';
 import { Timeline } from './components/Timeline';
+import {
+  Menubar,
+  MenubarContent,
+  MenubarGroup,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from './components/ui/menubar';
 
 function App() {
   const project = useAppSelector((state) => state.project);
@@ -13,7 +21,21 @@ function App() {
           flexDirection: 'column',
         }}
       >
-        <div style={{ backgroundColor: 'red', height: '1.5rem' }}>toolbar</div>
+        <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger>Information</MenubarTrigger>
+            <MenubarContent>
+              <MenubarGroup>
+                <MenubarItem>
+                  Total Duration: {project.totalDuration}
+                </MenubarItem>
+                <MenubarItem>
+                  Total Measures: {project.totalMeasures}
+                </MenubarItem>
+              </MenubarGroup>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
         {/* <div style={{ marginBottom: '1rem' }}>
           <div>
             <p>Info:</p>
