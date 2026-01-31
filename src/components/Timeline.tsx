@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Playhead } from './Playhead';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { TickMarks } from './TickMarks';
+import { Button } from './ui/button';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -79,9 +80,9 @@ export function Timeline() {
       }}
     >
       <div className='flex h-8'>
-        <button onClick={async () => await startPlaybackAndUIUpdates()}>
+        <Button onClick={async () => await startPlaybackAndUIUpdates()}>
           play
-        </button>
+        </Button>
         <button onClick={async () => await pause()}>pause</button>
       </div>
       <div
