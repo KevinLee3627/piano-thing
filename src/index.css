@@ -2,27 +2,12 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
-/* @import './styles/globals.css';
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
 html,
 body,
 #root {
   height: 100vh;
-  margin: 0;
-  background-color: var(--background);
 }
-
-html {
-  font-size: 16px;
-} */
 
 @theme inline {
   --color-background: var(--background);

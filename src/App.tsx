@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from './app/hooks';
+import { useAppSelector } from './app/hooks';
 import { GlobalAudioContextProvider } from './context/audioContext';
 import { Timeline } from './components/Timeline';
 import {
@@ -14,13 +14,7 @@ function App() {
   const project = useAppSelector((state) => state.project);
   return (
     <GlobalAudioContextProvider>
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <div className='flex flex-col max-h-full'>
         <Menubar>
           <MenubarMenu>
             <MenubarTrigger>Information</MenubarTrigger>
@@ -32,23 +26,24 @@ function App() {
                 <MenubarItem>
                   Total Measures: {project.totalMeasures}
                 </MenubarItem>
+                <MenubarItem>BPM: {project.beatsPerMeasure}</MenubarItem>
+                <MenubarItem>Beat Value: {project.beatValue}</MenubarItem>
+                <MenubarItem>
+                  Beats Per Measure: {project.beatsPerMeasure}
+                </MenubarItem>
+                <MenubarItem>
+                  Seconds Per Measure: {project.secondsPerMeasure}
+                </MenubarItem>
+                <MenubarItem>
+                  px Per Second: {project.pxPerSecondScale}
+                </MenubarItem>
+                <MenubarItem>
+                  px Per Measure: {project.pxPerMeasureScale}
+                </MenubarItem>
               </MenubarGroup>
             </MenubarContent>
           </MenubarMenu>
         </Menubar>
-        {/* <div style={{ marginBottom: '1rem' }}>
-          <div>
-            <p>Info:</p>
-            <p>Total Duration: {project.totalDuration}s</p>
-            <p>Total Measures: {project.totalMeasures}</p>
-            <p>BPM: {project.beatsPerMinute}</p>
-            <p>Beat Value: {project.beatValue}</p>
-            <p>Beats Per Measure: {project.beatsPerMeasure}</p>
-            <p>Seconds per measure: {project.secondsPerMeasure}</p>
-            <p>px per secondd: {project.pxPerSecondScale} px</p>
-            <p>px per measure: {project.pxPerMeasureScale} px</p>
-          </div>
-        </div> */}
         <Timeline />
       </div>
     </GlobalAudioContextProvider>
