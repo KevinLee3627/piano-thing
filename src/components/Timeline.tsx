@@ -7,6 +7,7 @@ import { Playhead } from './Playhead';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { TickMarks } from './TickMarks';
 import { Button } from './ui/button';
+import { PauseIcon, PlayIcon } from 'lucide-react';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -74,10 +75,15 @@ export function Timeline() {
   return (
     <div className='flex flex-col h-full'>
       <div className='flex h-12'>
-        <Button onClick={async () => await startPlaybackAndUIUpdates()}>
-          play
+        <Button
+          className='rounded-full'
+          onClick={async () => await startPlaybackAndUIUpdates()}
+        >
+          <PlayIcon />
         </Button>
-        <button onClick={async () => await pause()}>pause</button>
+        <Button className='rounded-full' onClick={async () => await pause()}>
+          <PauseIcon />
+        </Button>
       </div>
       <div className='grow h-[50%] w-10/12 mx-auto my-0 overflow-x-scroll'>
         <div

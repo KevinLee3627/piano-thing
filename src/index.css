@@ -3,12 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html,
-body,
-#root {
-  height: 100vh;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -193,5 +187,25 @@ body,
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  html {
+    box-sizing: border-box;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100vh;
+  }
+
+  #root {
+    padding: 1rem;
   }
 }
