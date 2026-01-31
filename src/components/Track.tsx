@@ -1,28 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
-import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { useAppSelector } from '../app/hooks';
 import { Block } from './Block';
-import { Playhead } from './Playhead';
 import { useGlobalAudioContext } from '../context/audioContext';
 import { Keyboard } from './Keyboard';
-import { trackSlice } from '../app/trackSlice';
-import { TickMarks } from './TickMarks';
-
-const FPS = 60;
-const MS_PER_FRAME = 1000 / FPS;
 
 interface TrackProps {
   trackId: string;
+  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
 export const Track = (props: TrackProps) => {
   const audioContext = useGlobalAudioContext();
-  const dispatch = useAppDispatch();
-  const project = useAppSelector((state) => state.project);
 
-  const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
-  const { ref: trackRef, dimensions: trackDimensions } =
-    useResizeObserver<HTMLDivElement>();
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
@@ -49,98 +39,24 @@ export const Track = (props: TrackProps) => {
       oscillatorNode.stop(startTime + duration);
     });
   };
-
-  const animationRef = useRef<number>(null);
-  const msPrev = useRef(audioContext.currentTime);
-  const updateUITime = () => {
-    if (audioContext == null) return;
-
-    const msNow = audioContext.currentTime;
-    const msPassed = (msNow - msPrev.current) * 1000;
-
-    if (msPassed > MS_PER_FRAME) {
-      setPlaybackTime(msNow);
-      msPrev.current = msNow;
-    }
-
-    // NOTE: We calculate directly so we can stop at the correct time.
-    // Other places (like the check above) uses the stored state for UI/rendering purposes.
-    if (audioContext.currentTime >= project.totalDuration) {
-      stop();
-      return;
-    }
-
-    animationRef.current = requestAnimationFrame(updateUITime);
-  };
-
-  const startPlaybackAndUIUpdates = async () => {
-    if (Object.keys(track.blocks).length === 0) return;
-
-    if (playbackTime === 0) {
-      playTrack();
-    } else {
-      await audioContext.resume();
-    }
-
-    // Start RAF loop
-    animationRef.current = requestAnimationFrame(updateUITime);
-  };
-
-  const pause = async () => {
-    if (Object.keys(track.blocks).length === 0) return;
-
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    await audioContext.suspend();
-    dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
-  };
-
-  const stop = () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    dispatch(trackSlice.actions.stopTrack({ trackId: props.trackId }));
-  };
-
   // Triggered by button to play all tracksa t once
   useEffect(() => {
     if (track.isPlaying) {
-      startPlaybackAndUIUpdates();
+      playTrack();
     }
   }, [track.isPlaying]);
-
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, []);
-
-  // TODO: Implement scrolling by having like a 'frame' and 'window' setup - where the 'window'
-  // is really long but hidden by the 'frame', and we jnust scroll horizontally
   return (
     <>
-      <div
-        style={{
-          height: '50%',
-          border: '1px solid black',
-          position: 'relative',
-          width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
-        }}
-        ref={trackRef}
-      >
-        <TickMarks trackElemWidth={trackDimensions.width} />
-        <Playhead
-          trackDimensions={trackDimensions}
-          currentTime={playbackTime}
-        />
+      <div>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
             key={blockId}
             trackId={props.trackId}
             {...block}
-            trackDimensions={trackDimensions}
+            trackDimensions={props.trackDimensions}
           />
         ))}
       </div>
-      <button onClick={startPlaybackAndUIUpdates}>start thist rack</button>
-      <button onClick={pause}>pause</button>
       <Keyboard trackId={props.trackId} />
     </>
   );
