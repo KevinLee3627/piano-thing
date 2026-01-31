@@ -78,10 +78,12 @@ export function Timeline() {
         flexDirection: 'column',
       }}
     >
-      <button onClick={async () => await startPlaybackAndUIUpdates()}>
-        play {playbackTime}
-      </button>
-      <button onClick={async () => await pause()}>pause</button>
+      <div className='flex h-8'>
+        <button onClick={async () => await startPlaybackAndUIUpdates()}>
+          play
+        </button>
+        <button onClick={async () => await pause()}>pause</button>
+      </div>
       <div
         style={{
           flexGrow: 1,
