@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface BlockDimensions {
   width: number;
@@ -33,7 +33,7 @@ const initialState: TrackState = {
 };
 
 export const trackSlice = createSlice({
-  name: 'track',
+  name: "track",
   initialState,
   reducers: {
     addTrack: (state) => {
@@ -44,15 +44,15 @@ export const trackSlice = createSlice({
         isPlaying: false,
       };
     },
-    startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+    startTrack: (state, action: PayloadAction<Pick<Track, "trackId">>) => {
       state[action.payload.trackId].isPlaying = true;
     },
-    stopTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+    stopTrack: (state, action: PayloadAction<Pick<Track, "trackId">>) => {
       state[action.payload.trackId].isPlaying = false;
     },
     addBlock: (
       state,
-      action: PayloadAction<Pick<Track, 'trackId'> & Omit<Block, 'blockId'>>
+      action: PayloadAction<Pick<Track, "trackId"> & Omit<Block, "blockId">>,
     ) => {
       const blockId = crypto.randomUUID();
       state[action.payload.trackId].blocks[blockId] = {
@@ -67,8 +67,8 @@ export const trackSlice = createSlice({
     editBlock: (
       state,
       action: PayloadAction<
-        Pick<Track, 'trackId'> & Pick<Block, 'blockId'> & Partial<Block>
-      >
+        Pick<Track, "trackId"> & Pick<Block, "blockId"> & Partial<Block>
+      >,
     ) => {
       const trackID = action.payload.trackId;
       const blockId = action.payload.blockId;

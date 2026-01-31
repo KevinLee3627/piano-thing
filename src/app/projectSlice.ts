@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 interface ProjectState {
   isPlaying: boolean;
@@ -36,7 +36,7 @@ const initialState: ProjectState = {
 };
 
 export const projectSlice = createSlice({
-  name: 'project',
+  name: "project",
   initialState,
   reducers: {
     startPlayback: (state) => {
