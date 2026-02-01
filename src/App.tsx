@@ -14,7 +14,7 @@ function App() {
   const project = useAppSelector((state) => state.project);
   return (
     <GlobalAudioContextProvider>
-      <div className='flex flex-col max-h-full'>
+      <div className='flex flex-col max-h-full gap-4'>
         <Menubar>
           <MenubarMenu>
             <MenubarTrigger>Information</MenubarTrigger>
