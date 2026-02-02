@@ -47,7 +47,7 @@ export const Track = (props: TrackProps) => {
   }, [track.isPlaying]);
   return (
     <div className='h-16'>
-      <div>
+      <div className='h-full relative'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
             key={blockId}

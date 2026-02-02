@@ -51,10 +51,7 @@ export const Block = (props: BlockProps) => {
         width: `${blockInfo.dims.width}px`,
         left: `${blockInfo.dims.left}px`,
       }}
-      className={cn(
-        'absolute',
-        pointerIsPressed ? 'bg-red-500' : 'bg-green-500',
-      )}
+      className={cn('absolute', 'bg-primary', 'h-full')}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
@@ -102,10 +99,10 @@ export const Block = (props: BlockProps) => {
         }
       }}
     >
-      <p>{props.blockId.slice(0, 4)} -</p>
-      <p>left: {blockInfo.dims.left} </p>
+      {/* <p>{props.blockId.slice(0, 4)} -</p> */}
+      {/* <p>left: {blockInfo.dims.left} </p>
       <p>trackwiddth: {props.trackDimensions.width}</p>
-      <p>start {blockInfo.startTime}s</p>
+      <p>start {blockInfo.startTime}s</p> */}
     </div>
   );
 };
