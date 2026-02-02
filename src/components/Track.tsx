@@ -17,6 +17,8 @@ export const Track = (props: TrackProps) => {
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
+    // TODO: https://old.reddit.com/r/javascript/comments/6juyjk/optimizing_the_sound_quality_of_web_audio_api/
+    // Playing chords - fix gain value?
     Object.values(track.blocks).forEach((block) => {
       const startTime = audioContext.currentTime + block.startTime;
       const duration = block.duration;
@@ -47,18 +49,21 @@ export const Track = (props: TrackProps) => {
     }
   }, [track.isPlaying]);
   return (
-    <div className={cn(track.isExpanded ? 'h-48' : 'h-16')}>
-      <div className='h-4 relative'>
-        {Object.entries(track.blocks).map(([blockId, block]) => (
-          <Block
-            key={blockId}
-            trackId={props.trackId}
-            {...block}
-            trackDimensions={props.trackDimensions}
-          />
-        ))}
-      </div>
-      {<Keyboard trackId={props.trackId} />}
+    <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
+      {!track.isExpanded && (
+        <div className='h-4 relative'>
+          {Object.entries(track.blocks).map(([blockId, block]) => (
+            <Block
+              key={blockId}
+              trackId={props.trackId}
+              {...block}
+              trackDimensions={props.trackDimensions}
+            />
+          ))}
+        </div>
+      )}
+      {track.isExpanded && <div></div>}
+      {track.isExpanded && <Keyboard trackId={props.trackId} />}
     </div>
   );
 };

@@ -16,7 +16,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
 
   return (
     <>
-      <div className={cn(track.isExpanded ? 'h-48' : 'h-16')}>
+      <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
         <p>{track.name}</p>
         <Switch
           id={`track-${track.trackId}-expand-toggle`}
