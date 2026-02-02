@@ -10,6 +10,7 @@ import { Button } from './ui/button';
 import { PauseIcon, PlayIcon } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { TrackControl } from './TrackControl';
+import { TrackCreateDialog } from './TrackCreateDialog';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -90,12 +91,7 @@ export function Timeline() {
       <Separator />
       <div className='flex'>
         <div id='left-column' className='min-w-48 max-w-48 border-r'>
-          <Button
-            onClick={() => dispatch(trackSlice.actions.addTrack())}
-            className='h-12'
-          >
-            Add Track
-          </Button>
+          <TrackCreateDialog />
           <Separator />
           <div>
             {Object.values(tracks).map((track) => (

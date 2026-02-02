@@ -15,11 +15,14 @@ interface Block {
   dims: BlockDimensions;
 }
 
+type TrackType = 'monophonic' | 'polyphonic';
+
 export interface Track {
   trackId: string;
   blocks: Record<string, Block>;
   isPlaying: boolean;
   isExpanded: boolean;
+  type: TrackType;
   name: string;
 }
 
@@ -32,21 +35,25 @@ const initialState: TrackState = {
     blocks: {},
     isPlaying: false,
     isExpanded: false,
+    type: 'polyphonic',
     name: 'Track 1',
   },
 };
+
+type AddTrackPayload = Pick<Track, 'type'>;
 
 export const trackSlice = createSlice({
   name: 'track',
   initialState,
   reducers: {
-    addTrack: (state) => {
+    addTrack: (state, action: PayloadAction<AddTrackPayload>) => {
       const newTrackId = crypto.randomUUID();
       state[newTrackId] = {
         trackId: newTrackId,
         blocks: {},
         isPlaying: false,
         isExpanded: false,
+        type: action.payload.type,
         name: `Track ${Object.keys(state).length + 1}`,
       };
     },
