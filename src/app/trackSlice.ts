@@ -32,7 +32,7 @@ const initialState: TrackState = {
     blocks: {},
     isPlaying: false,
     isExpanded: false,
-    name: 'Track 0',
+    name: 'Track 1',
   },
 };
 
@@ -47,7 +47,7 @@ export const trackSlice = createSlice({
         blocks: {},
         isPlaying: false,
         isExpanded: false,
-        name: `Track ${Object.keys(state).length}`,
+        name: `Track ${Object.keys(state).length + 1}`,
       };
     },
     startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
