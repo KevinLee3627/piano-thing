@@ -101,7 +101,7 @@ export function Timeline() {
             {Object.values(tracks).map((track) => (
               <TrackControl
                 key={`track-${track.trackId}-controls`}
-                track={track}
+                trackId={track.trackId}
               />
             ))}
           </div>
@@ -124,7 +124,11 @@ export function Timeline() {
             </div>
             <Separator />
             {Object.keys(tracks).map((trackId) => (
-              <Track trackId={trackId} trackDimensions={timelineDimensions} />
+              <Track
+                key={`track-${trackId}`}
+                trackId={trackId}
+                trackDimensions={timelineDimensions}
+              />
             ))}
           </div>
         </div>

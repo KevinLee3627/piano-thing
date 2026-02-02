@@ -4,7 +4,7 @@ import { useAppSelector } from '../app/hooks';
 import { Block } from './Block';
 import { useGlobalAudioContext } from '../context/audioContext';
 import { Keyboard } from './Keyboard';
-import { Separator } from './ui/separator';
+import { cn } from '@/lib/utils';
 
 interface TrackProps {
   trackId: string;
@@ -47,8 +47,8 @@ export const Track = (props: TrackProps) => {
     }
   }, [track.isPlaying]);
   return (
-    <div className='h-16'>
-      <div className='h-full relative'>
+    <div className={cn(track.isExpanded ? 'h-48' : 'h-16')}>
+      <div className='h-4 relative'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
             key={blockId}
@@ -59,7 +59,6 @@ export const Track = (props: TrackProps) => {
         ))}
       </div>
       {<Keyboard trackId={props.trackId} />}
-      <Separator />
     </div>
   );
 };

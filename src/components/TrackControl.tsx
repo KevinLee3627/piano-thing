@@ -3,40 +3,39 @@
 import { trackSlice, type Track } from '@/app/trackSlice';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
-import { Separator } from './ui/separator';
-import { useAppDispatch } from '@/app/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { cn } from '@/lib/utils';
 
 interface TrackControlProps {
-  track: Track;
+  trackId: Track['trackId'];
 }
 
-export const TrackControl = ({ track }: TrackControlProps) => {
+export const TrackControl = ({ trackId }: TrackControlProps) => {
   const dispatch = useAppDispatch();
+  const track = useAppSelector((state) => state.tracks[trackId]);
 
   return (
     <>
-      <div className='h-16'>
+      <div className={cn(track.isExpanded ? 'h-48' : 'h-16')}>
         <p>{track.name}</p>
         <Switch
           id={`track-${track.trackId}-expand-toggle`}
-          onCheckedChange={(checked) => {
-            console.log(`checked :${checked}`);
-
-            return dispatch(
+          onCheckedChange={(checked) =>
+            dispatch(
               checked
-                ? trackSlice.actions.collapseTrack({
+                ? trackSlice.actions.expandTrack({
                     trackId: track.trackId,
                   })
-                : trackSlice.actions.expandTrack({
+                : trackSlice.actions.collapseTrack({
                     trackId: track.trackId,
                   }),
-            );
-          }}
+            )
+          }
         />
-        <Label htmlFor={`track-${track.trackId}-expand-toggle`}>Expand</Label>
-        <span>{track.isExpanded}</span>
+        <Label htmlFor={`track-${track.trackId}-expand-toggle`}>
+          Expand {String(track.isExpanded)}
+        </Label>
       </div>
-      <Separator />
     </>
   );
 };
