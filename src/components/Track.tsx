@@ -4,6 +4,7 @@ import { useAppSelector } from '../app/hooks';
 import { Block } from './Block';
 import { useGlobalAudioContext } from '../context/audioContext';
 import { Keyboard } from './Keyboard';
+import { Separator } from './ui/separator';
 
 interface TrackProps {
   trackId: string;
@@ -58,6 +59,7 @@ export const Track = (props: TrackProps) => {
         ))}
       </div>
       {<Keyboard trackId={props.trackId} />}
+      <Separator />
     </div>
   );
 };

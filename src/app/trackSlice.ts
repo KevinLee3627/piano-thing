@@ -15,7 +15,7 @@ interface Block {
   dims: BlockDimensions;
 }
 
-interface Track {
+export interface Track {
   trackId: string;
   blocks: Record<string, Block>;
   isPlaying: boolean;
@@ -46,7 +46,7 @@ export const trackSlice = createSlice({
         trackId: newTrackId,
         blocks: {},
         isPlaying: false,
-        isExpanded: true,
+        isExpanded: false,
         name: `Track ${Object.keys(state).length}`,
       };
     },
@@ -55,6 +55,12 @@ export const trackSlice = createSlice({
     },
     stopTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
       state[action.payload.trackId].isPlaying = false;
+    },
+    expandTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+      state[action.payload.trackId].isExpanded = true;
+    },
+    collapseTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+      state[action.payload.trackId].isExpanded = false;
     },
     addBlock: (
       state,

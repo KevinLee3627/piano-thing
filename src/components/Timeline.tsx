@@ -9,6 +9,7 @@ import { TickMarks } from './TickMarks';
 import { Button } from './ui/button';
 import { PauseIcon, PlayIcon } from 'lucide-react';
 import { Separator } from './ui/separator';
+import { TrackControl } from './TrackControl';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -88,7 +89,7 @@ export function Timeline() {
       </div>
       <Separator />
       <div className='flex'>
-        <div className='min-w-48 max-w-48 border-r'>
+        <div id='left-column' className='min-w-48 max-w-48 border-r'>
           <Button
             onClick={() => dispatch(trackSlice.actions.addTrack())}
             className='h-12'
@@ -98,17 +99,16 @@ export function Timeline() {
           <Separator />
           <div>
             {Object.values(tracks).map((track) => (
-              <>
-                <div key={`${track.trackId}-controls`} className='h-16'>
-                  {track.name}
-                </div>
-                <Separator />
-              </>
+              <TrackControl
+                key={`track-${track.trackId}-controls`}
+                track={track}
+              />
             ))}
           </div>
         </div>
-        <div className='overflow-x-scroll'>
+        <div id='right-column' className='overflow-x-scroll'>
           <div
+            id='timeline-container'
             style={{
               width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
             }}
@@ -124,14 +124,7 @@ export function Timeline() {
             </div>
             <Separator />
             {Object.keys(tracks).map((trackId) => (
-              <>
-                <Track
-                  trackId={trackId}
-                  key={trackId}
-                  trackDimensions={timelineDimensions}
-                />
-                <Separator />
-              </>
+              <Track trackId={trackId} trackDimensions={timelineDimensions} />
             ))}
           </div>
         </div>
