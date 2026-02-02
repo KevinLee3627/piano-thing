@@ -15,25 +15,23 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   const track = useAppSelector((state) => state.tracks[trackId]);
 
   return (
-    <>
-      <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
-        <p>{track.name}</p>
-        <Switch
-          id={`track-${track.trackId}-expand-toggle`}
-          onCheckedChange={(checked) =>
-            dispatch(
-              checked
-                ? trackSlice.actions.expandTrack({
-                    trackId: track.trackId,
-                  })
-                : trackSlice.actions.collapseTrack({
-                    trackId: track.trackId,
-                  }),
-            )
-          }
-        />
-        <Label htmlFor={`track-${track.trackId}-expand-toggle`}>Expand</Label>
-      </div>
-    </>
+    <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
+      <p>{track.name}</p>
+      <Switch
+        id={`track-${track.trackId}-expand-toggle`}
+        onCheckedChange={(checked) =>
+          dispatch(
+            checked
+              ? trackSlice.actions.expandTrack({
+                  trackId: track.trackId,
+                })
+              : trackSlice.actions.collapseTrack({
+                  trackId: track.trackId,
+                }),
+          )
+        }
+      />
+      <Label htmlFor={`track-${track.trackId}-expand-toggle`}>Expand</Label>
+    </div>
   );
 };

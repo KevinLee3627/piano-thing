@@ -23,7 +23,7 @@ import { Input } from './ui/input';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import * as z from 'zod';
 import { useForm } from '@tanstack/react-form';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useAppDispatch } from '@/app/hooks';
 import { trackSlice } from '@/app/trackSlice';
 import { useState } from 'react';
 
@@ -38,13 +38,12 @@ type TrackCreateFormSchema = z.infer<typeof trackCreateFormSchema>;
 
 export const TrackCreateDialog = () => {
   const dispatch = useAppDispatch();
-  const tracks = useAppSelector((state) => state.tracks);
 
   const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm({
     defaultValues: {
-      name: `Track ${Object.keys(tracks).length + 1}`,
+      name: `New Track`,
       polyphony: 'polyphonic',
     },
     validators: {
@@ -65,6 +64,7 @@ export const TrackCreateDialog = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <form
         id='form-track-create'
+        className='h-12'
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
@@ -109,7 +109,7 @@ export const TrackCreateDialog = () => {
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <FieldSet>
-                  <FieldLegend>Polyphony</FieldLegend>
+                  <FieldLegend variant='label'>Polyphony</FieldLegend>
                   <RadioGroup
                     value={field.state.value}
                     onValueChange={field.handleChange}
