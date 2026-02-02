@@ -7,10 +7,6 @@ import { cn } from '@/lib/utils';
 interface BlockProps {
   trackId: string;
   blockId: string;
-  startTime: number;
-  duration: number;
-  frequency: number;
-  gain: number;
   trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
@@ -27,8 +23,8 @@ export const Block = (props: BlockProps) => {
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
     const newLeft =
-      (props.startTime / project.totalDuration) * project.pxPerSecondScale;
-    const blockWidth = props.duration * project.pxPerSecondScale;
+      (blockInfo.startTime / project.totalDuration) * project.pxPerSecondScale;
+    const blockWidth = blockInfo.duration * project.pxPerSecondScale;
     dispatch(
       trackSlice.actions.editBlock({
         trackId: props.trackId,
@@ -83,7 +79,7 @@ export const Block = (props: BlockProps) => {
             Math.min(newLeft, blockInfo.dims.maxLeft),
             0,
           );
-          const blockWidth = props.duration * project.pxPerSecondScale;
+          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
           dispatch(
             trackSlice.actions.editBlock({
               trackId: props.trackId,
