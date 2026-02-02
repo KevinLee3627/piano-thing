@@ -209,3 +209,7 @@
     padding: 1rem;
   }
 }
+
+@utility no-scrollbar {
+  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+}

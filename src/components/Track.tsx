@@ -46,7 +46,7 @@ export const Track = (props: TrackProps) => {
     }
   }, [track.isPlaying]);
   return (
-    <>
+    <div className='min-h-60'>
       <div>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
@@ -57,7 +57,7 @@ export const Track = (props: TrackProps) => {
           />
         ))}
       </div>
-      <Keyboard trackId={props.trackId} />
-    </>
+      {<Keyboard trackId={props.trackId} />}
+    </div>
   );
 };

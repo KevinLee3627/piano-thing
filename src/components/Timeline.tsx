@@ -75,7 +75,7 @@ export function Timeline() {
   }, []);
   return (
     <div className='flex flex-col h-full border border-border rounded-md'>
-      <div className='flex h-12 justify-center items-center m-2'>
+      <div id='top-bar' className='flex h-12 justify-center items-center m-2'>
         <Button
           className='rounded-full'
           onClick={async () => await startPlaybackAndUIUpdates()}
@@ -87,28 +87,37 @@ export function Timeline() {
         </Button>
       </div>
       <Separator />
-      <div className='grow h-[50%] w-10/12 mx-auto my-0 overflow-x-scroll'>
-        <div
-          style={{
-            width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
-          }}
-          className='border border-black relative h-1/2'
-          ref={timelineRef}
-        >
-          <TickMarks trackElemWidth={timelineDimensions.width} />
-          <Playhead
-            currentTime={playbackTime}
-            trackDimensions={timelineDimensions}
-          />
-          {Object.keys(tracks).map((trackId) => {
-            return (
-              <Track
-                trackId={trackId}
-                key={trackId}
+      <div className='flex'>
+        <div className='min-w-48 max-w-48'>
+          <Button onClick={() => dispatch(trackSlice.actions.addTrack())}>
+            Add Track
+          </Button>
+        </div>
+        <div className='overflow-x-scroll'>
+          <div
+            style={{
+              width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
+            }}
+            className='relative shrink-0'
+            ref={timelineRef}
+          >
+            <div className='min-h-12'>
+              <TickMarks trackElemWidth={timelineDimensions.width} />
+              <Playhead
+                currentTime={playbackTime}
                 trackDimensions={timelineDimensions}
               />
-            );
-          })}
+            </div>
+            {Object.keys(tracks).map((trackId) => {
+              return (
+                <Track
+                  trackId={trackId}
+                  key={trackId}
+                  trackDimensions={timelineDimensions}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

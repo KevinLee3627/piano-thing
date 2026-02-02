@@ -13,7 +13,7 @@ export const Playhead = (props: PlayheadProps) => {
   return (
     <div
       style={{ left: `${left}px` }}
-      className='absolute -top-2.5 h-25 w-px bg-red-500 text-white'
+      className='absolute -top-2.5 h-full w-px bg-red-500 text-white'
     ></div>
   );
 };
