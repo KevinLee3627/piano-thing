@@ -88,10 +88,24 @@ export function Timeline() {
       </div>
       <Separator />
       <div className='flex'>
-        <div className='min-w-48 max-w-48'>
-          <Button onClick={() => dispatch(trackSlice.actions.addTrack())}>
+        <div className='min-w-48 max-w-48 border-r'>
+          <Button
+            onClick={() => dispatch(trackSlice.actions.addTrack())}
+            className='h-12'
+          >
             Add Track
           </Button>
+          <Separator />
+          <div>
+            {Object.values(tracks).map((track) => (
+              <>
+                <div key={`${track.trackId}-controls`} className='h-16'>
+                  {track.name}
+                </div>
+                <Separator />
+              </>
+            ))}
+          </div>
         </div>
         <div className='overflow-x-scroll'>
           <div
@@ -101,22 +115,24 @@ export function Timeline() {
             className='relative shrink-0'
             ref={timelineRef}
           >
-            <div className='min-h-12'>
+            <div className='h-12'>
               <TickMarks trackElemWidth={timelineDimensions.width} />
               <Playhead
                 currentTime={playbackTime}
                 trackDimensions={timelineDimensions}
               />
             </div>
-            {Object.keys(tracks).map((trackId) => {
-              return (
+            <Separator />
+            {Object.keys(tracks).map((trackId) => (
+              <>
                 <Track
                   trackId={trackId}
                   key={trackId}
                   trackDimensions={timelineDimensions}
                 />
-              );
-            })}
+                <Separator />
+              </>
+            ))}
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ export const Keyboard = ({ trackId }: { trackId: string }) => {
         return (
           <div
             key={note}
-            className='w-12.5 h-37.5 border border-dashed border-black'
+            className='w-12.5 border border-dashed border-black'
             onClick={() => {
               dispatch(
                 trackSlice.actions.addBlock({

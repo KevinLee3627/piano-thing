@@ -20,6 +20,7 @@ interface Track {
   blocks: Record<string, Block>;
   isPlaying: boolean;
   isExpanded: boolean;
+  name: string;
 }
 
 export type TrackState = Record<string, Track>;
@@ -31,6 +32,7 @@ const initialState: TrackState = {
     blocks: {},
     isPlaying: false,
     isExpanded: false,
+    name: 'Track 0',
   },
 };
 
@@ -45,6 +47,7 @@ export const trackSlice = createSlice({
         blocks: {},
         isPlaying: false,
         isExpanded: true,
+        name: `Track ${Object.keys(state).length}`,
       };
     },
     startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
