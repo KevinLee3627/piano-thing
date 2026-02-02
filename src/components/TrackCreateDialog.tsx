@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -12,7 +13,7 @@ import {
   Field,
   FieldContent,
   FieldDescription,
-  FieldGroup,
+  FieldError,
   FieldLabel,
   FieldLegend,
   FieldSet,
@@ -20,62 +21,142 @@ import {
 } from './ui/field';
 import { Input } from './ui/input';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import * as z from 'zod';
+import { useForm } from '@tanstack/react-form';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { trackSlice } from '@/app/trackSlice';
+import { useState } from 'react';
+
+const trackCreateFormSchema = z
+  .object({
+    name: z.string().min(1, 'Track name must be at least 1 character long.'),
+    polyphony: z.enum(['monophonic', 'polyphonic']),
+  })
+  .required();
+
+type TrackCreateFormSchema = z.infer<typeof trackCreateFormSchema>;
 
 export const TrackCreateDialog = () => {
+  const dispatch = useAppDispatch();
+  const tracks = useAppSelector((state) => state.tracks);
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      name: `Track ${Object.keys(tracks).length + 1}`,
+      polyphony: 'polyphonic',
+    },
+    validators: {
+      onSubmit: trackCreateFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      dispatch(
+        trackSlice.actions.addTrack({
+          polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
+          name: value.name,
+        }),
+      );
+      setIsOpen(false);
+    },
+  });
+
   return (
-    <Dialog>
-      <form>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <form
+        id='form-track-create'
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
         <DialogTrigger asChild>
           <Button>Add Track</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Track</DialogTitle>
+            <DialogDescription>Specify options for new track</DialogDescription>
           </DialogHeader>
-          <Field>
-            <FieldLabel htmlFor='track-option-name'>Track Name</FieldLabel>
-            <Input id='track-option-name' type='text' placeholder='Track 1' />
-          </Field>
-          <FieldSet>
-            <FieldLegend>Polyphony</FieldLegend>
-            <FieldGroup>
-              <RadioGroup>
-                <FieldLabel htmlFor='track-option-monophonic'>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem
-                      value='monophonic'
-                      id='track-option-monophonic'
-                    />
-                    <FieldContent>
-                      <FieldTitle>Monophonic</FieldTitle>
-                      <FieldDescription>
-                        One pitch/sound only - used for rhythmic tracks
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
-                </FieldLabel>
-                <FieldLabel htmlFor='track-option-polyphonic'>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem
-                      value='polyphonic'
-                      id='track-option-polyphonic'
-                    />
-                    <FieldContent>
-                      <FieldTitle>Polyphonic</FieldTitle>
-                      <FieldDescription>
-                        Multiple notes at a time
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
-                </FieldLabel>
-              </RadioGroup>
-            </FieldGroup>
-          </FieldSet>
+          <form.Field
+            name='name'
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid}>
+                  <FieldLabel htmlFor='track-option-name'>
+                    Track Name
+                  </FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    aria-invalid={isInvalid}
+                    type='text'
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+          <form.Field
+            name='polyphony'
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <FieldSet>
+                  <FieldLegend>Polyphony</FieldLegend>
+                  <RadioGroup
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                  >
+                    <FieldLabel htmlFor='track-option-monophonic'>
+                      <Field orientation='horizontal' data-invalid={isInvalid}>
+                        <RadioGroupItem
+                          value='monophonic'
+                          id='track-option-monophonic'
+                          aria-invalid={isInvalid}
+                        />
+                        <FieldContent>
+                          <FieldTitle>Monophonic</FieldTitle>
+                          <FieldDescription>
+                            One pitch/sound only - used for rhythmic tracks
+                          </FieldDescription>
+                        </FieldContent>
+                      </Field>
+                    </FieldLabel>
+                    <FieldLabel htmlFor='track-option-polyphonic'>
+                      <Field orientation='horizontal' data-invalid={isInvalid}>
+                        <RadioGroupItem
+                          value='polyphonic'
+                          id='track-option-polyphonic'
+                          aria-invalid={isInvalid}
+                        />
+                        <FieldContent>
+                          <FieldTitle>Polyphonic</FieldTitle>
+                          <FieldDescription>
+                            Multiple notes at a time
+                          </FieldDescription>
+                        </FieldContent>
+                      </Field>
+                    </FieldLabel>
+                  </RadioGroup>
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </FieldSet>
+              );
+            }}
+          />
           <DialogFooter>
             <DialogClose asChild>
               <Button variant='outline'>Cancel</Button>
             </DialogClose>
-            <Button type='submit'>Save changes</Button>
+            <Button type='submit' form='form-track-create'>
+              Save changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </form>
