@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useAppSelector } from '../app/hooks';
-import { Block } from './Block';
 import { useGlobalAudioContext } from '../context/audioContext';
-import { Keyboard } from './Keyboard';
-import { cn } from '@/lib/utils';
+import { MonophonicTrack } from './MonophonicTrack';
+import { PolyphonicTrack } from './PolyphonicTrack';
 
 interface TrackProps {
   trackId: string;
@@ -17,6 +16,7 @@ export const Track = (props: TrackProps) => {
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
+    // TODO: Possibly extract out into hook so both Monophonic and Polyphonic track can play?
     // TODO: https://old.reddit.com/r/javascript/comments/6juyjk/optimizing_the_sound_quality_of_web_audio_api/
     // Playing chords - fix gain value?
     Object.values(track.blocks).forEach((block) => {
@@ -48,22 +48,18 @@ export const Track = (props: TrackProps) => {
       playTrack();
     }
   }, [track.isPlaying]);
-  return (
-    <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
-      {!track.isExpanded && (
-        <div className='h-4 relative'>
-          {Object.entries(track.blocks).map(([blockId, block]) => (
-            <Block
-              key={blockId}
-              trackId={props.trackId}
-              {...block}
-              trackDimensions={props.trackDimensions}
-            />
-          ))}
-        </div>
-      )}
-      {track.isExpanded && <div></div>}
-      {track.isExpanded && <Keyboard trackId={props.trackId} />}
-    </div>
-  );
+  if (track.polyphony === 'monophonic') {
+    return (
+      <MonophonicTrack
+        trackId={track.trackId}
+        trackDimensions={props.trackDimensions}
+      />
+    );
+  } else
+    return (
+      <PolyphonicTrack
+        trackId={track.trackId}
+        trackDimensions={props.trackDimensions}
+      />
+    );
 };
