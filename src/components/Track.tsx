@@ -16,7 +16,6 @@ export const Track = (props: TrackProps) => {
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const playTrack = () => {
-    // TODO: Possibly extract out into hook so both Monophonic and Polyphonic track can play?
     // TODO: https://old.reddit.com/r/javascript/comments/6juyjk/optimizing_the_sound_quality_of_web_audio_api/
     // Playing chords - fix gain value?
     Object.values(track.blocks).forEach((block) => {

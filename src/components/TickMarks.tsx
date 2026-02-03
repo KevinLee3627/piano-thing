@@ -8,7 +8,7 @@ export const TickMarks = (props: TickMarksProps) => {
   const project = useAppSelector((state) => state.project);
 
   return (
-    <div className='h-4 relative'>
+    <div className='h-8 relative'>
       {Array.from({ length: project.totalMeasures })
         .fill(0)
         .map((_, i) => {

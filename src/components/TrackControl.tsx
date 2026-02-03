@@ -1,5 +1,3 @@
-// TODO: Needs a btter name...
-
 import { trackSlice, type Track } from '@/app/trackSlice';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
