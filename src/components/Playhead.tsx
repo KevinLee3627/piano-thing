@@ -17,16 +17,15 @@ export const Playhead = (props: PlayheadProps) => {
     (props.currentTime / project.totalDuration) * props.trackDimensions.width,
   );
   return (
-    <>
+    <div className='absolute h-full z-50' style={{ left: `${left - 8}px` }}>
       <div
         className={cn(
-          'absolute w-0 h-0',
+          'relative w-0 h-0',
           'border-l-8 border-l-transparent',
           'border-r-8 border-r-transparent',
           'border-t-16 border-white',
           isPressed ? 'border-red-500' : 'border-white',
         )}
-        style={{ left: `${left - 8}px` }}
         ref={ref}
         onPointerDown={(e) => {
           if (ref.current != null) {
@@ -51,10 +50,7 @@ export const Playhead = (props: PlayheadProps) => {
           setLeft(constrainedNewLeft);
         }}
       />
-      <div
-        className='absolute -top-2.5 h-full w-px bg-white'
-        style={{ left: `${left}px` }}
-      />
-    </>
+      <div className='relative left-2 -top-2.5 h-full w-px bg-white' />
+    </div>
   );
 };
