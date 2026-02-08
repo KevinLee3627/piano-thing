@@ -52,7 +52,8 @@ export function Timeline() {
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
     if (playbackTimeRef.current >= project.totalDuration) {
-      alert('stop');
+      pause();
+      setPlaybackTime(0);
       return;
     }
 
