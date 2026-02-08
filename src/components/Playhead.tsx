@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface PlayheadProps {
   trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
-  currentTime: number;
+  playbackTime: number;
   setPlaybackTime: React.Dispatch<SetStateAction<number>>;
 }
 
@@ -15,14 +15,15 @@ export const Playhead = (props: PlayheadProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(
-    (props.currentTime / project.totalDuration) * props.trackDimensions.width,
+    (props.playbackTime / project.totalDuration) * props.trackDimensions.width,
   );
 
   useEffect(() => {
     setLeft(
-      (props.currentTime / project.totalDuration) * props.trackDimensions.width,
+      (props.playbackTime / project.totalDuration) *
+        props.trackDimensions.width,
     );
-  }, [props.currentTime]);
+  }, [props.playbackTime]);
 
   return (
     <div className='absolute h-full z-50' style={{ left: `${left - 8}px` }}>

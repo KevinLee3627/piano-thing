@@ -126,7 +126,7 @@ export function Timeline() {
             <div className='h-12'>
               <TickMarks trackElemWidth={timelineDimensions.width} />
               <Playhead
-                currentTime={playbackTime}
+                playbackTime={playbackTime}
                 trackDimensions={timelineDimensions}
                 setPlaybackTime={setPlaybackTime}
               />
