@@ -27,6 +27,15 @@ export function Timeline() {
   const audioContext = useGlobalAudioContext();
 
   const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
+
+  // NOTE: this ref is used to check when to stop the track
+  // the playbackTime state is not available in the updateUITime closure
+  // so we need to keep track of it in a ref
+  const playbackTimeRef = useRef(playbackTime);
+  useEffect(() => {
+    playbackTimeRef.current = playbackTime;
+  }, [playbackTime]);
+
   const animationRef = useRef<number>(null);
   const msPrev = useRef(audioContext.currentTime);
   const updateUITime = () => {
@@ -36,13 +45,13 @@ export function Timeline() {
     const msPassed = (msNow - msPrev.current) * 1000;
 
     if (msPassed > MS_PER_FRAME) {
-      setPlaybackTime(msNow);
+      setPlaybackTime((prevPlaybackTime) => prevPlaybackTime + msPassed / 1000);
       msPrev.current = msNow;
     }
 
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
-    if (audioContext.currentTime >= project.totalDuration) {
+    if (playbackTimeRef.current >= project.totalDuration) {
       alert('stop');
       return;
     }
