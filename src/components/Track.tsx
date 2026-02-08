@@ -20,9 +20,8 @@ export const Track = (props: TrackProps) => {
     // TODO: https://old.reddit.com/r/javascript/comments/6juyjk/optimizing_the_sound_quality_of_web_audio_api/
     // Playing chords - fix gain value?
     Object.values(track.blocks).forEach((block) => {
-      // NOTE: Before scheduling a block, check if its startTime is >= the current playback time
       if (block.startTime < props.playbackTime) return;
-      // The '-props.playbackTime' makes it relative to the current playbacktime
+
       const startTime =
         audioContext.currentTime + block.startTime - props.playbackTime;
       const duration = block.duration;

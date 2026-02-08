@@ -85,6 +85,21 @@ export function Timeline() {
     };
   }, []);
 
+  const rightColRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (rightColRef.current == null) return;
+
+    // NOTE: Halfway mark of the visible portion of the timeline
+    const halfwayMark = rightColRef.current.offsetWidth / 2;
+    const currentPlayheadLeft =
+      (playbackTime / project.totalDuration) * timelineDimensions.width;
+    const isPastHalfway = currentPlayheadLeft > halfwayMark;
+    if (isPastHalfway) {
+      // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
+      rightColRef.current.scrollLeft += project.pxPerSecondScale / FPS;
+    }
+  }, [playbackTime]);
+
   return (
     <div className='flex flex-col h-full border border-border rounded-md'>
       <div id='top-bar' className='flex h-12 justify-center items-center m-2'>
@@ -118,11 +133,13 @@ export function Timeline() {
           id='right-column'
           className='overflow-x-scroll'
           onScroll={(e) => {
-            const newScrollLeft = e.currentTarget.scrollLeft;
             dispatch(
-              projectSlice.actions.updateTimelineScrollLeft(newScrollLeft),
+              projectSlice.actions.updateTimelineScrollLeft(
+                e.currentTarget.scrollLeft,
+              ),
             );
           }}
+          ref={rightColRef}
         >
           <div
             id='timeline-container'
