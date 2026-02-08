@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '../app/hooks';
 import type { useResizeObserver } from '../hooks/useResizeObserver';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,13 @@ export const Playhead = (props: PlayheadProps) => {
   const [left, setLeft] = useState(
     (props.currentTime / project.totalDuration) * props.trackDimensions.width,
   );
+
+  useEffect(() => {
+    setLeft(
+      (props.currentTime / project.totalDuration) * props.trackDimensions.width,
+    );
+  }, [props.currentTime]);
+
   return (
     <div className='absolute h-full z-50' style={{ left: `${left - 8}px` }}>
       <div
