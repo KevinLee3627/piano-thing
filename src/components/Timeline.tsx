@@ -11,6 +11,7 @@ import { PauseIcon, PlayIcon } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { TrackControl } from './TrackControl';
 import { TrackCreateDialog } from './TrackCreateDialog';
+import { projectSlice } from '@/app/projectSlice';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -57,7 +58,6 @@ export function Timeline() {
     } else {
       await audioContext.resume();
     }
-
     // Start RAF loop
     animationRef.current = requestAnimationFrame(updateUITime);
   };
@@ -75,6 +75,7 @@ export function Timeline() {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, []);
+
   return (
     <div className='flex flex-col h-full border border-border rounded-md'>
       <div id='top-bar' className='flex h-12 justify-center items-center m-2'>
@@ -102,7 +103,16 @@ export function Timeline() {
             ))}
           </div>
         </div>
-        <div id='right-column' className='overflow-x-scroll'>
+        <div
+          id='right-column'
+          className='overflow-x-scroll'
+          onScroll={(e) => {
+            const newScrollLeft = e.currentTarget.scrollLeft;
+            dispatch(
+              projectSlice.actions.updateTimelineScrollLeft(newScrollLeft),
+            );
+          }}
+        >
           <div
             id='timeline-container'
             style={{

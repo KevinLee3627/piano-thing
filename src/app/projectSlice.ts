@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface ProjectState {
   isPlaying: boolean;
@@ -10,6 +10,7 @@ interface ProjectState {
   beatValue: number;
   totalMeasures: number;
   beatsPerMinute: number;
+  timelineScrollLeft: number;
 }
 
 const DEFAULT_BEATS_PER_MEASURE = 4;
@@ -33,6 +34,7 @@ const initialState: ProjectState = {
   beatValue: DEFAULT_BEAT_VALUE,
   totalMeasures: DEFAULT_TOTAL_MEASURES,
   beatsPerMinute: DEFAULT_BEATS_PER_MINUTE,
+  timelineScrollLeft: 0,
 };
 
 export const projectSlice = createSlice({
@@ -44,6 +46,9 @@ export const projectSlice = createSlice({
     },
     stopPlayback: (state) => {
       state.isPlaying = false;
+    },
+    updateTimelineScrollLeft: (state, action: PayloadAction<number>) => {
+      state.timelineScrollLeft = action.payload;
     },
   },
 });

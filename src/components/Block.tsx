@@ -73,7 +73,10 @@ export const Block = (props: BlockProps) => {
         if (blockRef.current == null) return;
         if (pointerIsPressed) {
           const newLeft =
-            e.clientX - props.trackDimensions.left - blockInfo.dims.width / 2;
+            e.clientX -
+            props.trackDimensions.left -
+            blockInfo.dims.width / 2 +
+            project.timelineScrollLeft;
           // NOTE: Constrains block dragging to start and end of the track
           const constrainedNewLeft = Math.max(
             Math.min(newLeft, blockInfo.dims.maxLeft),
