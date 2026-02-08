@@ -13,7 +13,7 @@ export const Playhead = (props: PlayheadProps) => {
   return (
     <>
       <div
-        className='absolute w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-16 border-t-red-500'
+        className='absolute w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-16 border-white'
         style={{ left: `${left - 8}px` }}
       />
       <div
