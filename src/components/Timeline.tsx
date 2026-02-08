@@ -138,6 +138,8 @@ export function Timeline() {
                 playbackTime={playbackTime}
                 trackDimensions={timelineDimensions}
                 setPlaybackTime={setPlaybackTime}
+                pause={pause}
+                play={startPlaybackAndUIUpdates}
               />
             </div>
             <Separator />

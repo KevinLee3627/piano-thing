@@ -7,6 +7,8 @@ interface PlayheadProps {
   trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   playbackTime: number;
   setPlaybackTime: React.Dispatch<SetStateAction<number>>;
+  pause: () => Promise<void>;
+  play: () => Promise<void>;
 }
 
 export const Playhead = (props: PlayheadProps) => {
@@ -40,6 +42,7 @@ export const Playhead = (props: PlayheadProps) => {
           if (ref.current != null) {
             ref.current?.setPointerCapture(e.pointerId);
             setIsPressed(true);
+            props.pause();
           }
         }}
         onPointerUp={() => {
@@ -47,6 +50,7 @@ export const Playhead = (props: PlayheadProps) => {
             (left / props.trackDimensions.width) * project.totalDuration;
           props.setPlaybackTime(newPlaybackTime);
           setIsPressed(false);
+          props.play();
         }}
         onPointerMove={(e) => {
           if (ref.current == null) return;
