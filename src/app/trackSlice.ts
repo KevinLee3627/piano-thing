@@ -34,7 +34,7 @@ const initialState: TrackState = {
     trackId: initialTrackID,
     blocks: {},
     isPlaying: false,
-    isExpanded: false,
+    isExpanded: true,
     polyphony: 'polyphonic',
     name: 'Track 1',
   },

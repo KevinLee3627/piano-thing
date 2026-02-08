@@ -17,6 +17,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
       <p>{track.name}</p>
       <Switch
         id={`track-${track.trackId}-expand-toggle`}
+        checked={track.isExpanded}
         onCheckedChange={(checked) =>
           dispatch(
             checked
