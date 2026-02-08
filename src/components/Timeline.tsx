@@ -43,7 +43,7 @@ export function Timeline() {
     // NOTE: We calculate directly so we can stop at the correct time.
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
     if (audioContext.currentTime >= project.totalDuration) {
-      stop();
+      alert('stop');
       return;
     }
 
@@ -89,6 +89,8 @@ export function Timeline() {
           <PauseIcon />
         </Button>
       </div>
+      <p>playback {playbackTime}</p>
+      <p>audiocontext time {audioContext.currentTime}</p>
       <Separator />
       <div className='flex'>
         <div id='left-column' className='min-w-48 max-w-48 border-r'>
@@ -126,6 +128,7 @@ export function Timeline() {
               <Playhead
                 currentTime={playbackTime}
                 trackDimensions={timelineDimensions}
+                setPlaybackTime={setPlaybackTime}
               />
             </div>
             <Separator />

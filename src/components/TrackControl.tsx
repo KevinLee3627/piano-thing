@@ -31,6 +31,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
         }
       />
       <Label htmlFor={`track-${track.trackId}-expand-toggle`}>Expand</Label>
+      <p>{String(track.isPlaying)}</p>
     </div>
   );
 };

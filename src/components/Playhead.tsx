@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, type SetStateAction } from 'react';
 import { useAppSelector } from '../app/hooks';
 import type { useResizeObserver } from '../hooks/useResizeObserver';
 import { cn } from '@/lib/utils';
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface PlayheadProps {
   trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   currentTime: number;
+  setPlaybackTime: React.Dispatch<SetStateAction<number>>;
 }
 
 export const Playhead = (props: PlayheadProps) => {
@@ -41,6 +42,9 @@ export const Playhead = (props: PlayheadProps) => {
           }
         }}
         onPointerUp={() => {
+          const newPlaybackTime =
+            (left / props.trackDimensions.width) * project.totalDuration;
+          props.setPlaybackTime(newPlaybackTime);
           setIsPressed(false);
         }}
         onPointerMove={(e) => {
