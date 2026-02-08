@@ -60,13 +60,12 @@ export function Timeline() {
   };
 
   const startPlaybackAndUIUpdates = async () => {
-    if (playbackTime === 0) {
-      Object.values(tracks).forEach((track) =>
-        dispatch(trackSlice.actions.startTrack({ trackId: track.trackId })),
-      );
-    } else {
-      await audioContext.resume();
-    }
+    await audioContext.resume();
+
+    Object.values(tracks).forEach((track) =>
+      dispatch(trackSlice.actions.startTrack({ trackId: track.trackId })),
+    );
+
     // Start RAF loop
     animationRef.current = requestAnimationFrame(updateUITime);
   };
@@ -146,6 +145,7 @@ export function Timeline() {
                 key={`track-${trackId}`}
                 trackId={trackId}
                 trackDimensions={timelineDimensions}
+                playbackTime={playbackTime}
               />
             ))}
           </div>
