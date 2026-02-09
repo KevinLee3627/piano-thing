@@ -32,9 +32,6 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
     ));
   }, []);
 
-  // To create note on click...count # of notes - calculate height of one note, divide height of container, find
-  // clientY of mouse click - given the mouse position, calculate which note it would fall in
-
   return (
     <div className='flex'>
       <div className='relative w-12'>{noteElems}</div>
@@ -42,6 +39,8 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
         ref={trackRef}
         className='relative grow'
         onClick={(e) => {
+          // To create note on click...count # of notes - calculate height of one note, divide height of container, find
+          // clientY of mouse click - given the mouse position, calculate which note it would fall in
           if (trackRef.current == null) return;
           const trackTop = trackRef.current.offsetTop;
           const trackLeft = trackRef.current.offsetLeft;
@@ -54,6 +53,24 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
 
           const duration = project.secondsPerMeasure / project.beatsPerMeasure;
           const startTime = mouseX / project.pxPerSecondScale;
+
+          // To fix bug where dragging a block creates a new one on click...
+          // Figure out if the click is within the bounds of an existing block?
+          // If so, early return
+          // Maybe keep the state in Track component on which block (using block id) is
+          // currently being pressed? So replace isPressed/setIsPressed within Block
+
+          const clickedBlock = Object.values(track.blocks).find((block) => {
+            const withinX =
+              mouseX >= block.dims.left &&
+              mouseX <= block.dims.left + block.dims.width;
+            const withinY =
+              mouseY >= block.dims.top &&
+              mouseY <= block.dims.top + block.dims.height;
+            return withinX && withinY;
+          });
+          if (clickedBlock) return;
+
           dispatch(
             trackSlice.actions.addBlock({
               trackId: track.trackId,
