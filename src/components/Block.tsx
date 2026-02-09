@@ -10,6 +10,9 @@ interface BlockProps {
   trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
+// TODO: don't hard-code this??
+export const BLOCK_HEIGHT = 24;
+
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
@@ -22,15 +25,16 @@ export const Block = (props: BlockProps) => {
   // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
   // resize observer? This also updates block positions when screen or track is resized.
   useEffect(() => {
-    const newLeft =
-      (blockInfo.startTime / project.totalDuration) * project.pxPerSecondScale;
+    const newLeft = blockInfo.startTime * project.pxPerSecondScale;
     const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+
     dispatch(
       trackSlice.actions.editBlock({
         trackId: props.trackId,
         blockId: props.blockId,
         dims: {
           left: newLeft,
+          height: BLOCK_HEIGHT,
           width: blockWidth,
           maxLeft: project.totalDuration * project.pxPerSecondScale,
         },
@@ -44,10 +48,11 @@ export const Block = (props: BlockProps) => {
     <div
       ref={blockRef}
       style={{
+        height: `${blockInfo.dims.height}px`,
         width: `${blockInfo.dims.width}px`,
         left: `${blockInfo.dims.left}px`,
       }}
-      className={cn('absolute', 'bg-primary', 'h-6')}
+      className={cn('absolute', 'bg-primary')}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
@@ -90,6 +95,7 @@ export const Block = (props: BlockProps) => {
               dims: {
                 left: constrainedNewLeft,
                 width: blockWidth,
+                height: BLOCK_HEIGHT,
                 maxLeft:
                   project.totalDuration * project.pxPerSecondScale - blockWidth,
               },

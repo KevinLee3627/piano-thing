@@ -24,6 +24,7 @@ export const Keyboard = ({ trackId }: { trackId: string }) => {
                     left: 0,
                     maxLeft: 0,
                     width: 0,
+                    height: 24,
                   },
                 }),
               );

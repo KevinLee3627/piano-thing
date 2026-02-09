@@ -1,9 +1,10 @@
-import { useAppSelector } from '@/app/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { cn } from '@/lib/utils';
-import { Block } from './Block';
+import { Block, BLOCK_HEIGHT } from './Block';
 import type { useResizeObserver } from '@/hooks/useResizeObserver';
-import { noteMapping } from '@/util/noteUtils';
+import { generateNoteRange, getNoteFreqByName } from '@/util/noteUtils';
 import { useMemo, useRef } from 'react';
+import { trackSlice } from '@/app/trackSlice';
 
 interface PolyphonicTrackProps {
   trackId: string;
@@ -13,36 +14,63 @@ interface PolyphonicTrackProps {
 export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const track = useAppSelector((state) => state.tracks[props.trackId]);
+  const project = useAppSelector((state) => state.project);
+  const dispatch = useAppDispatch();
 
-  const notes = useMemo(() => {
-    // NOTE: Reverse b/c we want lower notes on the bottom
-    const octaves = [3].reverse();
-    return octaves.map((octave) => {
-      return Object.keys(noteMapping)
-        .reverse()
-        .map((noteName) => (
-          <div
-            key={`note-${noteName}${octave}`}
-            className={cn(
-              'h-6',
-              noteName.includes('#') ? 'bg-black' : 'bg-white',
-              noteName.includes('#') ? 'text-white' : 'text-black',
-            )}
-          >
-            {noteName}
-            {octave}
-          </div>
-        ));
-    });
+  // NOTE: Reverse b/c we want lower notes on the bottom
+  const notes = useMemo(() => generateNoteRange('A3', 'A4').reverse(), []);
+  const noteElems = useMemo(() => {
+    return notes.map((noteName) => (
+      <div
+        key={`note-${noteName}`}
+        className={cn(
+          'h-6',
+          noteName.includes('#') ? 'bg-black' : 'bg-white',
+          noteName.includes('#') ? 'text-white' : 'text-black',
+        )}
+      >
+        {noteName}
+      </div>
+    ));
   }, []);
 
   // To create note on click...count # of notes - calculate height of one note, divide height of container, find
   // clientY of mouse click - given the mouse position, calculate which note it would fall in
 
   return (
-    <div ref={trackRef} className='flex'>
-      <div className='relative w-12'>{notes}</div>
-      <div className='relative grow'>
+    <div className='flex'>
+      <div className='relative w-12'>{noteElems}</div>
+      <div
+        ref={trackRef}
+        className='relative grow'
+        onClick={(e) => {
+          if (trackRef.current == null) return;
+          const trackTop = trackRef.current.offsetTop;
+          const trackLeft = trackRef.current.offsetLeft;
+
+          const mouseY = e.clientY - trackTop;
+          const mouseX = e.clientX - trackLeft;
+
+          const clickedIndex = Math.floor(mouseY / BLOCK_HEIGHT);
+          const noteName = notes[clickedIndex];
+
+          dispatch(
+            trackSlice.actions.addBlock({
+              trackId: track.trackId,
+              startTime: mouseX / project.pxPerSecondScale,
+              duration: project.secondsPerMeasure / project.beatsPerMeasure,
+              frequency: getNoteFreqByName(`${noteName}`),
+              gain: 1,
+              dims: {
+                left: 0,
+                maxLeft: 0,
+                width: 0,
+                height: BLOCK_HEIGHT,
+              },
+            }),
+          );
+        }}
+      >
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
             key={blockId}

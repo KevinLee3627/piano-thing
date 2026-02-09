@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface BlockDimensions {
+  height: number;
   width: number;
   left: number;
   maxLeft: number;
@@ -80,7 +81,7 @@ export const trackSlice = createSlice({
         duration: action.payload.duration,
         frequency: action.payload.frequency,
         gain: action.payload.gain,
-        dims: { width: 0, left: 0, maxLeft: 0 },
+        dims: { height: 0, width: 0, left: 0, maxLeft: 0 },
       };
     },
     editBlock: (
