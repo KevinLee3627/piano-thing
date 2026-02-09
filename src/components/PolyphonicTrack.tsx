@@ -40,9 +40,9 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   // clientY of mouse click - given the mouse position, calculate which note it would fall in
 
   return (
-    <div ref={trackRef}>
+    <div ref={trackRef} className='flex'>
       <div className='relative w-12'>{notes}</div>
-      <div className='h-full relative'>
+      <div className='relative grow'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
             key={blockId}

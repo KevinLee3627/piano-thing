@@ -129,7 +129,7 @@ export function Timeline() {
           <TrackCreateDialog />
         </div>
         <div
-          className='overflow-x-scroll'
+          className='overflow-x-scroll ml-12 no-scrollbar'
           onScroll={(e) => {
             dispatch(
               projectSlice.actions.updateTimelineScrollLeft(
