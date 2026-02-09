@@ -3,14 +3,15 @@ import { cn } from '@/lib/utils';
 import { Block } from './Block';
 import type { useResizeObserver } from '@/hooks/useResizeObserver';
 import { noteMapping } from '@/util/noteUtils';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 interface PolyphonicTrackProps {
   trackId: string;
-  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
+  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
 export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
+  const trackRef = useRef<HTMLDivElement>(null);
   const track = useAppSelector((state) => state.tracks[props.trackId]);
 
   const notes = useMemo(() => {
@@ -35,6 +36,9 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
     });
   }, []);
 
+  // To create note on click...count # of notes - calculate height of one note, divide height of container, find
+  // clientY of mouse click - given the mouse position, calculate which note it would fall in
+
   return (
     <div
       className={cn(
@@ -42,7 +46,9 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
         'border-b',
         'overflow-auto',
       )}
+      ref={trackRef}
     >
+      <p>{trackRef.current?.offsetHeight}</p>
       <div className='absolute'>{notes}</div>
       <div className='h-full relative'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
@@ -50,7 +56,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             key={blockId}
             trackId={props.trackId}
             {...block}
-            trackDimensions={props.trackDimensions}
+            trackDimensions={props.railDimensions}
           />
         ))}
       </div>

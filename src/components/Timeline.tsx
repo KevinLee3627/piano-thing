@@ -180,7 +180,7 @@ export function Timeline() {
               <Track
                 key={`track-${trackId}`}
                 trackId={trackId}
-                trackDimensions={railDimensions}
+                railDimensions={railDimensions}
                 playbackTime={playbackTime}
               />
             ))}

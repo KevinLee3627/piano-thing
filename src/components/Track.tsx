@@ -7,7 +7,7 @@ import { PolyphonicTrack } from './PolyphonicTrack';
 
 interface TrackProps {
   trackId: string;
-  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
+  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   playbackTime: number;
 }
 
@@ -55,14 +55,14 @@ export const Track = (props: TrackProps) => {
     return (
       <MonophonicTrack
         trackId={track.trackId}
-        trackDimensions={props.trackDimensions}
+        trackDimensions={props.railDimensions}
       />
     );
   } else
     return (
       <PolyphonicTrack
         trackId={track.trackId}
-        trackDimensions={props.trackDimensions}
+        railDimensions={props.railDimensions}
       />
     );
 };
