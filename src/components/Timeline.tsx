@@ -21,7 +21,7 @@ export function Timeline() {
   const tracks = useAppSelector((state) => state.tracks);
   const project = useAppSelector((state) => state.project);
 
-  const { ref: timelineRef, dimensions: timelineDimensions } =
+  const { ref: railRef, dimensions: railDimensions } =
     useResizeObserver<HTMLDivElement>();
 
   const audioContext = useGlobalAudioContext();
@@ -94,7 +94,7 @@ export function Timeline() {
     // NOTE: Halfway mark of the visible portion of the timeline
     const halfwayMark = topRowRef.current.offsetWidth / 2;
     const currentPlayheadLeft =
-      (playbackTime / project.totalDuration) * timelineDimensions.width;
+      (playbackTime / project.totalDuration) * railDimensions.width;
     const isPastHalfway = currentPlayheadLeft > halfwayMark;
     if (isPastHalfway) {
       // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
@@ -138,18 +138,16 @@ export function Timeline() {
           ref={topRowRef}
         >
           <div
-            id='timeline-container'
             style={{
               width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
             }}
             className='relative shrink-0'
-            ref={timelineRef}
           >
             <div className='h-12 border-b sticky top-0'>
-              <TickMarks trackElemWidth={timelineDimensions.width} />
+              <TickMarks trackElemWidth={railDimensions.width} />
               <Playhead
                 playbackTime={playbackTime}
-                trackDimensions={timelineDimensions}
+                railDimensions={railDimensions}
                 setPlaybackTime={setPlaybackTime}
                 pause={pause}
                 play={startPlaybackAndUIUpdates}
@@ -171,16 +169,18 @@ export function Timeline() {
         </div>
         <div id='right-column' className='overflow-x-scroll' ref={rightColRef}>
           <div
+            id='rail'
             style={{
               width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
             }}
             className='relative shrink-0'
+            ref={railRef}
           >
             {Object.keys(tracks).map((trackId) => (
               <Track
                 key={`track-${trackId}`}
                 trackId={trackId}
-                trackDimensions={timelineDimensions}
+                trackDimensions={railDimensions}
                 playbackTime={playbackTime}
               />
             ))}

@@ -4,7 +4,7 @@ import type { useResizeObserver } from '../hooks/useResizeObserver';
 import { cn } from '@/lib/utils';
 
 interface PlayheadProps {
-  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
+  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   playbackTime: number;
   setPlaybackTime: React.Dispatch<SetStateAction<number>>;
   pause: () => Promise<void>;
@@ -17,13 +17,12 @@ export const Playhead = (props: PlayheadProps) => {
   const [isPressed, setIsPressed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(
-    (props.playbackTime / project.totalDuration) * props.trackDimensions.width,
+    (props.playbackTime / project.totalDuration) * props.railDimensions.width,
   );
 
   useEffect(() => {
     setLeft(
-      (props.playbackTime / project.totalDuration) *
-        props.trackDimensions.width,
+      (props.playbackTime / project.totalDuration) * props.railDimensions.width,
     );
   }, [props.playbackTime]);
 
@@ -47,7 +46,7 @@ export const Playhead = (props: PlayheadProps) => {
         }}
         onPointerUp={() => {
           const newPlaybackTime =
-            (left / props.trackDimensions.width) * project.totalDuration;
+            (left / props.railDimensions.width) * project.totalDuration;
           props.setPlaybackTime(newPlaybackTime);
           setIsPressed(false);
           props.play();
@@ -57,9 +56,9 @@ export const Playhead = (props: PlayheadProps) => {
           if (!isPressed) return;
 
           const newLeft =
-            e.clientX - props.trackDimensions.left + project.timelineScrollLeft;
+            e.clientX - props.railDimensions.left + project.timelineScrollLeft;
           const constrainedNewLeft = Math.max(
-            Math.min(newLeft, props.trackDimensions.width),
+            Math.min(newLeft, props.railDimensions.width),
             0,
           );
 
