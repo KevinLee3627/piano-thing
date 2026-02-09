@@ -163,7 +163,7 @@ export function Timeline() {
         </div>
       </div>
       <div className='flex-col'>
-        <div id='dummy-rail'>
+        <div id='dummy-rail-container'>
           <div className='min-w-48 max-w-48'></div>
           <div
             ref={primeRailRef}
@@ -187,15 +187,15 @@ export function Timeline() {
                 trackRailRefs.current[track.trackId] = el;
               }}
             >
+              {/* TODO: 48 = width of the piano keys. How can we not hard-code this */}
               <div
                 style={{
-                  width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
+                  width: `${project.pxPerMeasureScale * project.totalMeasures + 48}px`,
                 }}
               >
                 <Track
                   key={`track-${track.trackId}`}
                   trackId={track.trackId}
-                  railDimensions={railDimensions}
                   playbackTime={playbackTime}
                 />
               </div>

@@ -1,13 +1,10 @@
 import { useEffect } from 'react';
-import { useResizeObserver } from '../hooks/useResizeObserver';
 import { useAppSelector } from '../app/hooks';
 import { useGlobalAudioContext } from '../context/audioContext';
-import { MonophonicTrack } from './MonophonicTrack';
 import { PolyphonicTrack } from './PolyphonicTrack';
 
 interface TrackProps {
   trackId: string;
-  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   playbackTime: number;
 }
 
@@ -51,18 +48,5 @@ export const Track = (props: TrackProps) => {
       playTrack();
     }
   }, [track.isPlaying]);
-  if (track.polyphony === 'monophonic') {
-    return (
-      <MonophonicTrack
-        trackId={track.trackId}
-        trackDimensions={props.railDimensions}
-      />
-    );
-  } else
-    return (
-      <PolyphonicTrack
-        trackId={track.trackId}
-        railDimensions={props.railDimensions}
-      />
-    );
+  return <PolyphonicTrack trackId={track.trackId} />;
 };

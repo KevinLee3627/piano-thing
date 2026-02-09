@@ -20,7 +20,7 @@ export const MonophonicTrack = (props: MonophonicTrackProps) => {
               key={blockId}
               trackId={props.trackId}
               {...block}
-              trackDimensions={props.trackDimensions}
+              railDimensions={props.trackDimensions}
             />
           ))}
         </div>

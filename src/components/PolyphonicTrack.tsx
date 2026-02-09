@@ -1,14 +1,12 @@
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { cn } from '@/lib/utils';
 import { Block, BLOCK_HEIGHT } from './Block';
-import type { useResizeObserver } from '@/hooks/useResizeObserver';
 import { generateNoteRange, getNoteFreqByName } from '@/util/noteUtils';
 import { useMemo, useRef } from 'react';
 import { trackSlice } from '@/app/trackSlice';
 
 interface PolyphonicTrackProps {
   trackId: string;
-  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
 export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
@@ -74,14 +72,21 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           );
         }}
       >
-        {Object.entries(track.blocks).map(([blockId, block]) => (
-          <Block
-            key={blockId}
-            trackId={props.trackId}
-            {...block}
-            trackDimensions={props.railDimensions}
-          />
-        ))}
+        {Object.entries(track.blocks).map(([blockId, block]) => {
+          if (trackRef.current == null) return null;
+
+          return (
+            <Block
+              key={blockId}
+              trackId={props.trackId}
+              {...block}
+              railDimensions={{
+                width: trackRef.current.offsetWidth,
+                left: trackRef.current.offsetLeft,
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

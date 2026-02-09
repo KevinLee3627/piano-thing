@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 interface BlockProps {
   trackId: string;
   blockId: string;
-  trackDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
+  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
 }
 
 // TODO: don't hard-code this??
@@ -44,7 +44,7 @@ export const Block = (props: BlockProps) => {
       onPointerUp={() => {
         setPointerIsPressed(false);
         const newStartTime =
-          (blockInfo.dims.left / props.trackDimensions.width) *
+          (blockInfo.dims.left / props.railDimensions.width) *
           project.totalDuration;
 
         dispatch(
@@ -60,14 +60,16 @@ export const Block = (props: BlockProps) => {
         if (pointerIsPressed) {
           const newLeft =
             e.clientX -
-            props.trackDimensions.left -
+            props.railDimensions.left -
             blockInfo.dims.width / 2 +
             project.timelineScrollLeft;
+
           // NOTE: Constrains block dragging to start and end of the track
           const constrainedNewLeft = Math.max(
             Math.min(newLeft, blockInfo.dims.maxLeft),
             0,
           );
+
           const blockWidth = blockInfo.duration * project.pxPerSecondScale;
           dispatch(
             trackSlice.actions.editBlock({
