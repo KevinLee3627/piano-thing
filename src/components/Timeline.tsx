@@ -182,9 +182,18 @@ export function Timeline() {
             </div>
             <div
               data-my-label='rail'
-              className='overflow-x-scroll'
+              className='overflow-x-scroll no-scrollbar'
               ref={(el) => {
                 trackRailRefs.current[track.trackId] = el;
+              }}
+              onScroll={(e) => {
+                // Only sync if user scrolled this rail
+                if (
+                  topRowRef.current &&
+                  e.currentTarget.scrollLeft !== topRowRef.current.scrollLeft
+                ) {
+                  topRowRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                }
               }}
             >
               {/* TODO: 48 = width of the piano keys. How can we not hard-code this */}
