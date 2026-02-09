@@ -48,6 +48,17 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const mouseY = e.clientY - trackTop;
           const mouseX = e.clientX - trackLeft;
 
+          const clickedBlock = Object.values(track.blocks).find((block) => {
+            const withinX =
+              mouseX >= block.dims.left &&
+              mouseX <= block.dims.left + block.dims.width;
+            const withinY =
+              mouseY >= block.dims.top &&
+              mouseY <= block.dims.top + block.dims.height;
+            return withinX && withinY;
+          });
+          if (clickedBlock) return;
+
           const clickedIndex = Math.floor(mouseY / BLOCK_HEIGHT);
           const noteName = notes[clickedIndex];
 
@@ -59,17 +70,6 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           // If so, early return
           // Maybe keep the state in Track component on which block (using block id) is
           // currently being pressed? So replace isPressed/setIsPressed within Block
-
-          const clickedBlock = Object.values(track.blocks).find((block) => {
-            const withinX =
-              mouseX >= block.dims.left &&
-              mouseX <= block.dims.left + block.dims.width;
-            const withinY =
-              mouseY >= block.dims.top &&
-              mouseY <= block.dims.top + block.dims.height;
-            return withinX && withinY;
-          });
-          if (clickedBlock) return;
 
           dispatch(
             trackSlice.actions.addBlock({

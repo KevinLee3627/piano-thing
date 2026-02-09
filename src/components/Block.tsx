@@ -70,6 +70,8 @@ export const Block = (props: BlockProps) => {
             0,
           );
 
+          const newTop = e.clientY;
+
           const blockWidth = blockInfo.duration * project.pxPerSecondScale;
           dispatch(
             trackSlice.actions.editBlock({
