@@ -85,18 +85,20 @@ export function Timeline() {
     };
   }, []);
 
+  const topRowRef = useRef<HTMLDivElement>(null);
   const rightColRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (rightColRef.current == null) return;
+    if (topRowRef.current == null || rightColRef.current == null) return;
 
     // NOTE: Halfway mark of the visible portion of the timeline
-    const halfwayMark = rightColRef.current.offsetWidth / 2;
+    const halfwayMark = topRowRef.current.offsetWidth / 2;
     const currentPlayheadLeft =
       (playbackTime / project.totalDuration) * timelineDimensions.width;
     const isPastHalfway = currentPlayheadLeft > halfwayMark;
     if (isPastHalfway) {
       // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
-      rightColRef.current.scrollLeft += project.pxPerSecondScale / FPS;
+      topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
     }
   }, [playbackTime]);
 
@@ -117,19 +119,10 @@ export function Timeline() {
       <p>audiocontext time {audioContext.currentTime}</p>
       <Separator />
       <div className='flex'>
-        <div id='left-column' className='min-w-48 max-w-48 border-r'>
+        <div className='min-w-48 max-w-48 border-r'>
           <TrackCreateDialog />
-          <div>
-            {Object.values(tracks).map((track) => (
-              <TrackControl
-                key={`track-${track.trackId}-controls`}
-                trackId={track.trackId}
-              />
-            ))}
-          </div>
         </div>
         <div
-          id='right-column'
           className='overflow-x-scroll'
           onScroll={(e) => {
             dispatch(
@@ -137,8 +130,12 @@ export function Timeline() {
                 e.currentTarget.scrollLeft,
               ),
             );
+            if (topRowRef.current == null || rightColRef.current == null)
+              return;
+            // NOTE: Keeps scrollbars synced
+            rightColRef.current.scrollLeft = topRowRef.current.scrollLeft;
           }}
-          ref={rightColRef}
+          ref={topRowRef}
         >
           <div
             id='timeline-container'
@@ -158,6 +155,27 @@ export function Timeline() {
                 play={startPlaybackAndUIUpdates}
               />
             </div>
+          </div>
+        </div>
+      </div>
+      <div className='flex'>
+        <div id='left-column' className='min-w-48 max-w-48 border-r'>
+          <div>
+            {Object.values(tracks).map((track) => (
+              <TrackControl
+                key={`track-${track.trackId}-controls`}
+                trackId={track.trackId}
+              />
+            ))}
+          </div>
+        </div>
+        <div id='right-column' className='overflow-x-scroll' ref={rightColRef}>
+          <div
+            style={{
+              width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
+            }}
+            className='relative shrink-0'
+          >
             {Object.keys(tracks).map((trackId) => (
               <Track
                 key={`track-${trackId}`}
