@@ -81,7 +81,7 @@ export const trackSlice = createSlice({
         duration: action.payload.duration,
         frequency: action.payload.frequency,
         gain: action.payload.gain,
-        dims: { height: 0, width: 0, left: 0, maxLeft: 0 },
+        dims: action.payload.dims,
       };
     },
     editBlock: (

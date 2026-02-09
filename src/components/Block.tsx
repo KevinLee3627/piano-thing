@@ -22,26 +22,6 @@ export const Block = (props: BlockProps) => {
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
 
-  // NOTE: Default 'left' is overwritten after first render, maybe something to do with the
-  // resize observer? This also updates block positions when screen or track is resized.
-  useEffect(() => {
-    const newLeft = blockInfo.startTime * project.pxPerSecondScale;
-    const blockWidth = blockInfo.duration * project.pxPerSecondScale;
-
-    dispatch(
-      trackSlice.actions.editBlock({
-        trackId: props.trackId,
-        blockId: props.blockId,
-        dims: {
-          left: newLeft,
-          height: BLOCK_HEIGHT,
-          width: blockWidth,
-          maxLeft: project.totalDuration * project.pxPerSecondScale,
-        },
-      }),
-    );
-  }, [project.totalDuration]);
-
   const blockRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -103,11 +83,6 @@ export const Block = (props: BlockProps) => {
           );
         }
       }}
-    >
-      {/* <p>{props.blockId.slice(0, 4)} -</p> */}
-      {/* <p>left: {blockInfo.dims.left} </p>
-      <p>trackwiddth: {props.trackDimensions.width}</p>
-      <p>start {blockInfo.startTime}s</p> */}
-    </div>
+    />
   );
 };

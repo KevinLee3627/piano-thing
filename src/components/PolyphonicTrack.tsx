@@ -54,17 +54,19 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const clickedIndex = Math.floor(mouseY / BLOCK_HEIGHT);
           const noteName = notes[clickedIndex];
 
+          const duration = project.secondsPerMeasure / project.beatsPerMeasure;
+          const startTime = mouseX / project.pxPerSecondScale;
           dispatch(
             trackSlice.actions.addBlock({
               trackId: track.trackId,
-              startTime: mouseX / project.pxPerSecondScale,
-              duration: project.secondsPerMeasure / project.beatsPerMeasure,
+              startTime,
+              duration,
               frequency: getNoteFreqByName(`${noteName}`),
               gain: 1,
               dims: {
-                left: 0,
-                maxLeft: 0,
-                width: 0,
+                left: startTime * project.pxPerSecondScale,
+                maxLeft: project.totalDuration * project.pxPerSecondScale,
+                width: duration * project.pxPerSecondScale,
                 height: BLOCK_HEIGHT,
               },
             }),
