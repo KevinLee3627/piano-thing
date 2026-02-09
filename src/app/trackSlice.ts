@@ -5,6 +5,7 @@ interface BlockDimensions {
   width: number;
   left: number;
   maxLeft: number;
+  top: number;
 }
 
 interface Block {

@@ -64,6 +64,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               frequency: getNoteFreqByName(`${noteName}`),
               gain: 1,
               dims: {
+                top: clickedIndex * BLOCK_HEIGHT,
                 left: startTime * project.pxPerSecondScale,
                 maxLeft: project.totalDuration * project.pxPerSecondScale,
                 width: duration * project.pxPerSecondScale,

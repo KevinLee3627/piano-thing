@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import type { useResizeObserver } from '../hooks/useResizeObserver';
@@ -31,6 +31,7 @@ export const Block = (props: BlockProps) => {
         height: `${blockInfo.dims.height}px`,
         width: `${blockInfo.dims.width}px`,
         left: `${blockInfo.dims.left}px`,
+        top: `${blockInfo.dims.top}px`,
       }}
       className={cn('absolute', 'bg-primary')}
       onPointerDown={(e) => {
@@ -73,6 +74,7 @@ export const Block = (props: BlockProps) => {
               trackId: props.trackId,
               blockId: props.blockId,
               dims: {
+                top: blockInfo.dims.top,
                 left: constrainedNewLeft,
                 width: blockWidth,
                 height: BLOCK_HEIGHT,
