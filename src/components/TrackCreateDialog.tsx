@@ -64,7 +64,7 @@ export const TrackCreateDialog = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <form
         id='form-track-create'
-        className='h-12'
+        className='h-12 border-b'
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();

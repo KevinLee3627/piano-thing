@@ -47,7 +47,7 @@ export const Block = (props: BlockProps) => {
         width: `${blockInfo.dims.width}px`,
         left: `${blockInfo.dims.left}px`,
       }}
-      className={cn('absolute', 'bg-primary', 'h-full')}
+      className={cn('absolute', 'bg-primary', 'h-6')}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES

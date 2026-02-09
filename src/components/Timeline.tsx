@@ -119,7 +119,6 @@ export function Timeline() {
       <div className='flex'>
         <div id='left-column' className='min-w-48 max-w-48 border-r'>
           <TrackCreateDialog />
-          <Separator />
           <div>
             {Object.values(tracks).map((track) => (
               <TrackControl
@@ -149,7 +148,7 @@ export function Timeline() {
             className='relative shrink-0'
             ref={timelineRef}
           >
-            <div className='h-12'>
+            <div className='h-12 border-b sticky top-0'>
               <TickMarks trackElemWidth={timelineDimensions.width} />
               <Playhead
                 playbackTime={playbackTime}
@@ -159,7 +158,6 @@ export function Timeline() {
                 play={startPlaybackAndUIUpdates}
               />
             </div>
-            <Separator />
             {Object.keys(tracks).map((trackId) => (
               <Track
                 key={`track-${trackId}`}

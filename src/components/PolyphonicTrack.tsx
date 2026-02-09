@@ -12,7 +12,13 @@ interface PolyphonicTrackProps {
 export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   const track = useAppSelector((state) => state.tracks[props.trackId]);
   return (
-    <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
+    <div
+      className={cn(
+        track.isExpanded ? 'h-96' : 'h-16',
+        'border-b',
+        'overflow-auto',
+      )}
+    >
       <div className='h-full relative'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
