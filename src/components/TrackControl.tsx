@@ -13,7 +13,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   const track = useAppSelector((state) => state.tracks[trackId]);
 
   return (
-    <div className={cn(track.isExpanded ? 'h-96' : 'h-16', 'border-b')}>
+    <div>
       <p>{track.name}</p>
       <Switch
         id={`track-${track.trackId}-expand-toggle`}

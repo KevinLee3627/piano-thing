@@ -3,11 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 export const useResizeObserver = <T extends HTMLElement>() => {
   const [dimensions, setDimensions] = useState<{
     width: number;
-    height: number;
     left: number;
   }>({
     width: 0,
-    height: 0,
     left: 0,
   });
   const ref = useRef<T>(null);
@@ -17,7 +15,7 @@ export const useResizeObserver = <T extends HTMLElement>() => {
         for (let entry of entries) {
           setDimensions({
             width: entry.borderBoxSize[0].inlineSize,
-            height: entry.borderBoxSize[0].blockSize,
+            // height: entry.borderBoxSize[0].blockSize,
             left: entry.target.getBoundingClientRect().left,
           });
         }

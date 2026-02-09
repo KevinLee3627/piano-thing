@@ -21,7 +21,8 @@ export function Timeline() {
   const tracks = useAppSelector((state) => state.tracks);
   const project = useAppSelector((state) => state.project);
 
-  const { ref: railRef, dimensions: railDimensions } =
+  // TODO: Do we need this?
+  const { ref: primeRailRef, dimensions: railDimensions } =
     useResizeObserver<HTMLDivElement>();
 
   const audioContext = useGlobalAudioContext();
@@ -86,19 +87,24 @@ export function Timeline() {
   }, []);
 
   const topRowRef = useRef<HTMLDivElement>(null);
-  const rightColRef = useRef<HTMLDivElement>(null);
+  const trackRailRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Handles auto-scroll of timeline
   useEffect(() => {
-    if (topRowRef.current == null || rightColRef.current == null) return;
+    if (topRowRef.current == null) return;
 
     // NOTE: Halfway mark of the visible portion of the timeline
-    const halfwayMark = topRowRef.current.offsetWidth / 2;
     const currentPlayheadLeft =
       (playbackTime / project.totalDuration) * railDimensions.width;
+    const halfwayMark = topRowRef.current.offsetWidth / 2;
     const isPastHalfway = currentPlayheadLeft > halfwayMark;
     if (isPastHalfway) {
       // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
       topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
+      Object.values(trackRailRefs.current).forEach((railElem) => {
+        if (railElem == null || topRowRef.current == null) return;
+        railElem.scrollLeft = topRowRef.current.scrollLeft;
+      });
     }
   }, [playbackTime]);
 
@@ -130,10 +136,10 @@ export function Timeline() {
                 e.currentTarget.scrollLeft,
               ),
             );
-            if (topRowRef.current == null || rightColRef.current == null)
-              return;
-            // NOTE: Keeps scrollbars synced
-            rightColRef.current.scrollLeft = topRowRef.current.scrollLeft;
+            Object.values(trackRailRefs.current).forEach((railElem) => {
+              if (railElem == null || topRowRef.current == null) return;
+              railElem.scrollLeft = topRowRef.current.scrollLeft;
+            });
           }}
           ref={topRowRef}
         >
@@ -143,7 +149,7 @@ export function Timeline() {
             }}
             className='relative shrink-0'
           >
-            <div className='h-12 border-b sticky top-0'>
+            <div className='h-12 border-b sticky top-0 overflow-y-hidden'>
               <TickMarks trackElemWidth={railDimensions.width} />
               <Playhead
                 playbackTime={playbackTime}
@@ -156,36 +162,46 @@ export function Timeline() {
           </div>
         </div>
       </div>
-      <div className='flex'>
-        <div id='left-column' className='min-w-48 max-w-48 border-r'>
-          <div>
-            {Object.values(tracks).map((track) => (
+      <div className='flex-col'>
+        <div id='dummy-rail'>
+          <div className='min-w-48 max-w-48'></div>
+          <div
+            ref={primeRailRef}
+            style={{
+              width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
+            }}
+          ></div>
+        </div>
+        {Object.values(tracks).map((track) => (
+          <div key={`track-container-${track.trackId}`} className='flex'>
+            <div className='min-w-48 max-w-48 border-r'>
               <TrackControl
                 key={`track-${track.trackId}-controls`}
                 trackId={track.trackId}
               />
-            ))}
+            </div>
+            <div
+              data-my-label='rail'
+              className='overflow-x-scroll'
+              ref={(el) => {
+                trackRailRefs.current[track.trackId] = el;
+              }}
+            >
+              <div
+                style={{
+                  width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
+                }}
+              >
+                <Track
+                  key={`track-${track.trackId}`}
+                  trackId={track.trackId}
+                  railDimensions={railDimensions}
+                  playbackTime={playbackTime}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        <div id='right-column' className='overflow-x-scroll' ref={rightColRef}>
-          <div
-            id='rail'
-            style={{
-              width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
-            }}
-            className='relative shrink-0'
-            ref={railRef}
-          >
-            {Object.keys(tracks).map((trackId) => (
-              <Track
-                key={`track-${trackId}`}
-                trackId={trackId}
-                railDimensions={railDimensions}
-                playbackTime={playbackTime}
-              />
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
 
   const notes = useMemo(() => {
     // NOTE: Reverse b/c we want lower notes on the bottom
-    const octaves = [3, 4, 5].reverse();
+    const octaves = [3].reverse();
     return octaves.map((octave) => {
       return Object.keys(noteMapping)
         .reverse()
@@ -40,16 +40,8 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   // clientY of mouse click - given the mouse position, calculate which note it would fall in
 
   return (
-    <div
-      className={cn(
-        track.isExpanded ? 'h-96' : 'h-16',
-        'border-b',
-        'overflow-auto',
-      )}
-      ref={trackRef}
-    >
-      <p>{trackRef.current?.offsetHeight}</p>
-      <div className='absolute'>{notes}</div>
+    <div ref={trackRef}>
+      <div className='relative w-12'>{notes}</div>
       <div className='h-full relative'>
         {Object.entries(track.blocks).map(([blockId, block]) => (
           <Block
@@ -60,7 +52,6 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           />
         ))}
       </div>
-      {/* <Keyboard trackId={props.trackId} /> */}
     </div>
   );
 };
