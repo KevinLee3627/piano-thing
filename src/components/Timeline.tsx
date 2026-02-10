@@ -153,7 +153,8 @@ export function Timeline() {
               <TickMarks trackElemWidth={railDimensions.width} />
               <Playhead
                 playbackTime={playbackTime}
-                railDimensions={railDimensions}
+                // railDimensions={railDimensions}
+                railLeft={topRowRef.current?.offsetLeft ?? 0}
                 setPlaybackTime={setPlaybackTime}
                 pause={pause}
                 play={startPlaybackAndUIUpdates}
@@ -163,7 +164,7 @@ export function Timeline() {
         </div>
       </div>
       <div className='flex-col'>
-        <div id='dummy-rail-container'>
+        <div id='dummy-rail-container' className='flex'>
           <div className='min-w-48 max-w-48'></div>
           <div
             ref={primeRailRef}

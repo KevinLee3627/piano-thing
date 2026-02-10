@@ -4,8 +4,9 @@ import type { useResizeObserver } from '../hooks/useResizeObserver';
 import { cn } from '@/lib/utils';
 
 interface PlayheadProps {
-  railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
+  // railDimensions: ReturnType<typeof useResizeObserver>['dimensions'];
   playbackTime: number;
+  railLeft: number;
   setPlaybackTime: React.Dispatch<SetStateAction<number>>;
   pause: () => Promise<void>;
   play: () => Promise<void>;
@@ -14,16 +15,16 @@ interface PlayheadProps {
 export const Playhead = (props: PlayheadProps) => {
   const project = useAppSelector((state) => state.project);
 
+  const railWidth = project.pxPerMeasureScale * project.totalMeasures;
+
   const [isPressed, setIsPressed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(
-    (props.playbackTime / project.totalDuration) * props.railDimensions.width,
+    (props.playbackTime / project.totalDuration) * railWidth,
   );
 
   useEffect(() => {
-    setLeft(
-      (props.playbackTime / project.totalDuration) * props.railDimensions.width,
-    );
+    setLeft((props.playbackTime / project.totalDuration) * railWidth);
   }, [props.playbackTime]);
 
   return (
@@ -45,8 +46,7 @@ export const Playhead = (props: PlayheadProps) => {
           }
         }}
         onPointerUp={() => {
-          const newPlaybackTime =
-            (left / props.railDimensions.width) * project.totalDuration;
+          const newPlaybackTime = (left / railWidth) * project.totalDuration;
           props.setPlaybackTime(newPlaybackTime);
           setIsPressed(false);
           props.play();
@@ -56,11 +56,8 @@ export const Playhead = (props: PlayheadProps) => {
           if (!isPressed) return;
 
           const newLeft =
-            e.clientX - props.railDimensions.left + project.timelineScrollLeft;
-          const constrainedNewLeft = Math.max(
-            Math.min(newLeft, props.railDimensions.width),
-            0,
-          );
+            e.clientX - props.railLeft + project.timelineScrollLeft;
+          const constrainedNewLeft = Math.max(Math.min(newLeft, railWidth), 0);
 
           setLeft(constrainedNewLeft);
         }}
