@@ -1,10 +1,6 @@
 import { useAppSelector } from '../app/hooks';
 
-export interface TickMarksProps {
-  trackElemWidth: number;
-}
-
-export const TickMarks = (props: TickMarksProps) => {
+export const TickMarks = () => {
   const project = useAppSelector((state) => state.project);
 
   return (
@@ -12,7 +8,9 @@ export const TickMarks = (props: TickMarksProps) => {
       {Array.from({ length: project.totalMeasures })
         .fill(0)
         .map((_, i) => {
-          const left = props.trackElemWidth * (i / project.totalMeasures);
+          const trackElemWidth =
+            project.pxPerMeasureScale * project.totalMeasures;
+          const left = trackElemWidth * (i / project.totalMeasures);
           return (
             <div
               key={`tick-${i}`}

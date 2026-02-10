@@ -65,12 +65,6 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const duration = project.secondsPerMeasure / project.beatsPerMeasure;
           const startTime = mouseX / project.pxPerSecondScale;
 
-          // To fix bug where dragging a block creates a new one on click...
-          // Figure out if the click is within the bounds of an existing block?
-          // If so, early return
-          // Maybe keep the state in Track component on which block (using block id) is
-          // currently being pressed? So replace isPressed/setIsPressed within Block
-
           dispatch(
             trackSlice.actions.addBlock({
               trackId: track.trackId,
