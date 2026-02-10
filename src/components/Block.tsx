@@ -30,6 +30,8 @@ export const Block = (props: BlockProps) => {
     [trackInfo.minNote, trackInfo.maxNote],
   );
 
+  const diffRef = useRef(0); // Store offset from click to block's left edge
+
   return (
     <div
       ref={blockRef}
@@ -42,6 +44,10 @@ export const Block = (props: BlockProps) => {
       className={cn('absolute', 'bg-primary')}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
+          // Calculate offset from block's left edge to click position
+          const blockRect = blockRef.current.getBoundingClientRect();
+          diffRef.current = e.clientX - blockRect.left;
+
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
           blockRef.current.setPointerCapture(e.pointerId);
           setPointerIsPressed(true);
@@ -57,7 +63,7 @@ export const Block = (props: BlockProps) => {
           const newLeft =
             e.clientX -
             props.railDimensions.left -
-            blockInfo.dims.width / 2 +
+            diffRef.current +
             project.timelineScrollLeft;
 
           const blockWidth = blockInfo.duration * project.pxPerSecondScale;
@@ -81,7 +87,7 @@ export const Block = (props: BlockProps) => {
 
           // Calculate new start time basedd on x position
           const newStartTime =
-            (blockInfo.dims.left / props.railDimensions.width) *
+            (constrainedNewLeft / props.railDimensions.width) *
             project.totalDuration;
 
           dispatch(
