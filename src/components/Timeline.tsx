@@ -4,7 +4,6 @@ import { useGlobalAudioContext } from '../context/audioContext';
 import { trackSlice } from '../app/trackSlice';
 import { useEffect, useRef, useState } from 'react';
 import { Playhead } from './Playhead';
-import { useResizeObserver } from '../hooks/useResizeObserver';
 import { TickMarks } from './TickMarks';
 import { Button } from './ui/button';
 import { PauseIcon, PlayIcon } from 'lucide-react';
@@ -20,10 +19,6 @@ export function Timeline() {
   const dispatch = useAppDispatch();
   const tracks = useAppSelector((state) => state.tracks);
   const project = useAppSelector((state) => state.project);
-
-  // TODO: Do we need this?
-  const { ref: primeRailRef, dimensions: railDimensions } =
-    useResizeObserver<HTMLDivElement>();
 
   const audioContext = useGlobalAudioContext();
 
@@ -92,12 +87,14 @@ export function Timeline() {
   // Handles auto-scroll of timeline
   useEffect(() => {
     if (topRowRef.current == null) return;
-
     // NOTE: Halfway mark of the visible portion of the timeline
     const currentPlayheadLeft =
-      (playbackTime / project.totalDuration) * railDimensions.width;
+      (playbackTime / project.totalDuration) *
+      project.pxPerMeasureScale *
+      project.totalMeasures;
     const halfwayMark = topRowRef.current.offsetWidth / 2;
     const isPastHalfway = currentPlayheadLeft > halfwayMark;
+
     if (isPastHalfway) {
       // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
       topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
@@ -150,10 +147,9 @@ export function Timeline() {
             className='relative shrink-0'
           >
             <div className='h-12 border-b sticky top-0 overflow-y-hidden'>
-              <TickMarks trackElemWidth={railDimensions.width} />
+              <TickMarks />
               <Playhead
                 playbackTime={playbackTime}
-                // railDimensions={railDimensions}
                 railLeft={topRowRef.current?.offsetLeft ?? 0}
                 setPlaybackTime={setPlaybackTime}
                 pause={pause}
@@ -167,7 +163,6 @@ export function Timeline() {
         <div id='dummy-rail-container' className='flex'>
           <div className='min-w-48 max-w-48'></div>
           <div
-            ref={primeRailRef}
             style={{
               width: `${project.pxPerMeasureScale * project.totalMeasures}px`,
             }}
