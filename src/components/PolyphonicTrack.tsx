@@ -16,7 +16,10 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   const dispatch = useAppDispatch();
 
   // NOTE: Reverse b/c we want lower notes on the bottom
-  const notes = useMemo(() => generateNoteRange('A3', 'A4').reverse(), []);
+  const notes = useMemo(
+    () => generateNoteRange(track.minNote, track.maxNote).reverse(),
+    [],
+  );
   const noteElems = useMemo(() => {
     return notes.map((noteName) => (
       <div
@@ -75,7 +78,6 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               dims: {
                 top: clickedIndex * BLOCK_HEIGHT,
                 left: startTime * project.pxPerSecondScale,
-                maxLeft: project.totalDuration * project.pxPerSecondScale,
                 width: duration * project.pxPerSecondScale,
                 height: BLOCK_HEIGHT,
               },
@@ -94,6 +96,8 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               railDimensions={{
                 width: trackRef.current.offsetWidth,
                 left: trackRef.current.offsetLeft,
+                top: trackRef.current.offsetTop,
+                height: trackRef.current.offsetHeight,
               }}
             />
           );

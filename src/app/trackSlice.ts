@@ -1,10 +1,10 @@
+import type { NoteNameWithOctave } from '@/util/noteUtils';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface BlockDimensions {
   height: number;
   width: number;
   left: number;
-  maxLeft: number;
   top: number;
 }
 
@@ -26,6 +26,8 @@ export interface Track {
   isExpanded: boolean;
   polyphony: TrackPolyphony;
   name: string;
+  minNote: NoteNameWithOctave;
+  maxNote: NoteNameWithOctave;
 }
 
 export type TrackState = Record<string, Track>;
@@ -39,10 +41,15 @@ const initialState: TrackState = {
     isExpanded: true,
     polyphony: 'polyphonic',
     name: 'Track 1',
+    minNote: 'A3',
+    maxNote: 'A4',
   },
 };
 
-type AddTrackPayload = Pick<Track, 'polyphony' | 'name'>;
+type AddTrackPayload = Pick<
+  Track,
+  'polyphony' | 'name' | 'minNote' | 'maxNote'
+>;
 
 export const trackSlice = createSlice({
   name: 'track',
@@ -57,6 +64,9 @@ export const trackSlice = createSlice({
         isExpanded: false,
         polyphony: action.payload.polyphony,
         name: action.payload.name,
+        // TODO: Make this editable
+        minNote: action.payload.minNote,
+        maxNote: action.payload.maxNote,
       };
     },
     startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {

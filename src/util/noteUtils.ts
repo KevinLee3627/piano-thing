@@ -15,7 +15,7 @@ type NoteName =
   | 'G'
   | 'G#';
 
-type NoteNameWithOctave = `${NoteName}${number}`;
+export type NoteNameWithOctave = `${NoteName}${number}`;
 
 export const noteMapping: Record<NoteName, number> = {
   A: 0,

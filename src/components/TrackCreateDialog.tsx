@@ -54,6 +54,8 @@ export const TrackCreateDialog = () => {
         trackSlice.actions.addTrack({
           polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
           name: value.name,
+          minNote: 'A3',
+          maxNote: 'A4',
         }),
       );
       setIsOpen(false);
