@@ -38,7 +38,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
       <div
         ref={trackRef}
         className='relative grow'
-        onClick={(e) => {
+        onMouseDown={(e) => {
           // To create note on click...count # of notes - calculate height of one note, divide height of container, find
           // clientY of mouse click - given the mouse position, calculate which note it would fall in
           if (trackRef.current == null) return;
