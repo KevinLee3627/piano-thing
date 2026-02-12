@@ -146,7 +146,23 @@ export function Timeline() {
             }}
             className='relative shrink-0'
           >
-            <div className='h-12 border-b sticky top-0 overflow-y-hidden'>
+            <div
+              className='h-12 border-b sticky top-0 overflow-y-hidden'
+              // TODO: We should be able to drag
+              // TODO: When clicking multiple times at the same point, blocks are repeated,
+              // like the last 'round' keeps playing. That's b/c blocks are still 'queued' up...fix later
+              // TODO: This really feels like it should be in TickMarks. Maybe have TickMarks be full height?
+              onClick={async (e) => {
+                await pause();
+                const rect = e.currentTarget.getBoundingClientRect();
+
+                const totalPx =
+                  project.totalMeasures * project.pxPerMeasureScale;
+                const playbackTime =
+                  ((e.clientX - rect.left) / totalPx) * project.totalDuration;
+                setPlaybackTime(playbackTime);
+              }}
+            >
               <TickMarks />
               <Playhead
                 playbackTime={playbackTime}
