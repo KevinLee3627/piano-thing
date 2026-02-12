@@ -87,23 +87,44 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           );
         }}
       >
-        {Object.entries(track.blocks).map(([blockId, block]) => {
-          if (trackRef.current == null) return null;
+        <div
+          className='absolute inset-0'
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              90deg,
+              hsl(49, 52%, 96%) 0px,
+              hsl(49, 52%, 96%) 1px,
+              transparent 1px,
+              transparent ${(project.pxPerSecondScale * project.secondsPerMeasure) / project.beatsPerMeasure}px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              hsl(49, 52%, 96%) 0px,
+              hsl(49, 52%, 96%) 1px,
+              transparent 1px,
+              transparent ${BLOCK_HEIGHT}px
+            )
+            `,
+          }}
+        >
+          {Object.entries(track.blocks).map(([blockId, block]) => {
+            if (trackRef.current == null) return null;
 
-          return (
-            <Block
-              key={blockId}
-              trackId={props.trackId}
-              {...block}
-              railDimensions={{
-                width: trackRef.current.offsetWidth,
-                left: trackRef.current.offsetLeft,
-                top: trackRef.current.offsetTop,
-                height: trackRef.current.offsetHeight,
-              }}
-            />
-          );
-        })}
+            return (
+              <Block
+                key={blockId}
+                trackId={props.trackId}
+                {...block}
+                railDimensions={{
+                  width: trackRef.current.offsetWidth,
+                  left: trackRef.current.offsetLeft,
+                  top: trackRef.current.offsetTop,
+                  height: trackRef.current.offsetHeight,
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

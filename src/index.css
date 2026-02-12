@@ -123,6 +123,10 @@
   --spacing: 0.25rem;
 }
 
+.test {
+  color: hsl(49, 52%, 96%);
+}
+
 .dark {
   --background: hsl(115 27.2727% 8.6275%);
   --foreground: hsl(0 0% 100%);

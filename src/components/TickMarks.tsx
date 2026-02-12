@@ -14,7 +14,7 @@ export const TickMarks = () => {
           return (
             <div
               key={`tick-${i}`}
-              className='absolute'
+              className='absolute border-l border-white h-full'
               style={{ left: `${left}px` }}
             >
               {i}
