@@ -153,7 +153,7 @@ export function Timeline() {
               // like the last 'round' keeps playing. That's b/c blocks are still 'queued' up...fix later
               // TODO: This really feels like it should be in TickMarks. Maybe have TickMarks be full height?
               onClick={async (e) => {
-                await pause();
+                pause();
                 const rect = e.currentTarget.getBoundingClientRect();
 
                 const totalPx =
