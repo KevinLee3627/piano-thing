@@ -37,7 +37,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
 
   return (
     <div className='flex'>
-      <div className='relative w-12'>{noteElems}</div>
+      <div className='sticky left-0 w-12 z-10'>{noteElems}</div>
       <div
         ref={trackRef}
         className='relative grow'
