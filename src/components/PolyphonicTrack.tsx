@@ -51,7 +51,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const trackLeft = trackRef.current.offsetLeft;
 
           const mouseY = e.clientY - trackTop;
-          const mouseX = e.clientX - trackLeft;
+          const mouseX = e.clientX - trackLeft + project.timelineScrollLeft;
 
           const clickedBlock = Object.values(track.blocks).find((block) => {
             const withinX =
