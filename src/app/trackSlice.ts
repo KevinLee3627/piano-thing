@@ -28,6 +28,7 @@ export interface Track {
   name: string;
   minNote: NoteNameWithOctave;
   maxNote: NoteNameWithOctave;
+  quantize: boolean;
 }
 
 export type TrackState = Record<string, Track>;
@@ -43,12 +44,13 @@ const initialState: TrackState = {
     name: 'Track 1',
     minNote: 'A3',
     maxNote: 'A4',
+    quantize: false,
   },
 };
 
 type AddTrackPayload = Pick<
   Track,
-  'polyphony' | 'name' | 'minNote' | 'maxNote'
+  'polyphony' | 'name' | 'minNote' | 'maxNote' | 'quantize'
 >;
 
 export const trackSlice = createSlice({
@@ -67,6 +69,7 @@ export const trackSlice = createSlice({
         // TODO: Make this editable
         minNote: action.payload.minNote,
         maxNote: action.payload.maxNote,
+        quantize: action.payload.quantize,
       };
     },
     startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {

@@ -14,6 +14,7 @@ import {
   FieldContent,
   FieldDescription,
   FieldError,
+  FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
@@ -26,11 +27,13 @@ import { useForm } from '@tanstack/react-form';
 import { useAppDispatch } from '@/app/hooks';
 import { trackSlice } from '@/app/trackSlice';
 import { useState } from 'react';
+import { Checkbox } from './ui/checkbox';
 
 const trackCreateFormSchema = z
   .object({
     name: z.string().min(1, 'Track name must be at least 1 character long.'),
     polyphony: z.enum(['monophonic', 'polyphonic']),
+    quantize: z.boolean(),
   })
   .required();
 
@@ -45,6 +48,7 @@ export const TrackCreateDialog = () => {
     defaultValues: {
       name: `New Track`,
       polyphony: 'polyphonic',
+      quantize: false,
     },
     validators: {
       onSubmit: trackCreateFormSchema,
@@ -56,6 +60,7 @@ export const TrackCreateDialog = () => {
           name: value.name,
           minNote: 'A3',
           maxNote: 'A4',
+          quantize: value.quantize,
         }),
       );
       setIsOpen(false);
@@ -148,6 +153,29 @@ export const TrackCreateDialog = () => {
                     </FieldLabel>
                   </RadioGroup>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </FieldSet>
+              );
+            }}
+          />
+          <form.Field
+            name='quantize'
+            children={(field) => {
+              return (
+                <FieldSet>
+                  <FieldLegend variant='label'>Quantization</FieldLegend>
+                  <FieldGroup>
+                    <Field orientation='horizontal'>
+                      <Checkbox
+                        id={field.name}
+                        checked={field.state.value}
+                        onCheckedChange={(checked) => {
+                          field.handleChange(!!checked);
+                        }}
+                        onBlur={field.handleBlur}
+                      />
+                      <FieldLabel htmlFor={field.name}>Quantize</FieldLabel>
+                    </Field>
+                  </FieldGroup>
                 </FieldSet>
               );
             }}
