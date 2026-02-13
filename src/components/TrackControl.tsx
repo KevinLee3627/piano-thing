@@ -14,6 +14,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   return (
     <div>
       <p>{track.name}</p>
+      <TrackDialog mode='edit' trackId={track.trackId} />
       <Switch
         id={`track-${track.trackId}-quantize-toggle`}
         checked={track.isQuantized}
@@ -26,7 +27,6 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
           )
         }
       />
-      <TrackDialog mode='edit' trackId={track.trackId} />
       <p>Q.Res: {track.quantizationResolution}</p>
     </div>
   );

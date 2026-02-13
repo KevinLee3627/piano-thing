@@ -79,7 +79,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               gain: 1,
               dims: {
                 top: clickedIndex * BLOCK_HEIGHT,
-                left: startTime * project.pxPerSecondScale,
+                left: mouseX,
                 width: duration * project.pxPerSecondScale,
                 height: BLOCK_HEIGHT,
               },
