@@ -28,7 +28,19 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
       />
       <Label htmlFor={`track-${track.trackId}-expand-toggle`}>Expand</Label>
       <p>{String(track.isPlaying)}</p>
-      <p>{String(track.quantize)}</p>
+      <p>{String(track.isQuantized)}</p>
+      <Switch
+        id={`track-${track.trackId}-quantize-toggle`}
+        checked={track.isQuantized}
+        onCheckedChange={(checked) =>
+          dispatch(
+            trackSlice.actions.setTrackQuantized({
+              trackId: track.trackId,
+              isQuantized: checked,
+            }),
+          )
+        }
+      />
     </div>
   );
 };

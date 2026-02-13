@@ -60,7 +60,7 @@ export const TrackCreateDialog = () => {
           name: value.name,
           minNote: 'A3',
           maxNote: 'A4',
-          quantize: value.quantize,
+          isQuantized: value.quantize,
         }),
       );
       setIsOpen(false);
