@@ -20,11 +20,13 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
         onCheckedChange={(checked) =>
           dispatch(
             checked
-              ? trackSlice.actions.expandTrack({
+              ? trackSlice.actions.setTrackExpanded({
                   trackId: track.trackId,
+                  isExpanded: true,
                 })
-              : trackSlice.actions.collapseTrack({
+              : trackSlice.actions.setTrackExpanded({
                   trackId: track.trackId,
+                  isExpanded: false,
                 }),
           )
         }

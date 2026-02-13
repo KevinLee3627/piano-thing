@@ -60,7 +60,12 @@ export function Timeline() {
     await audioContext.resume();
 
     Object.values(tracks).forEach((track) =>
-      dispatch(trackSlice.actions.startTrack({ trackId: track.trackId })),
+      dispatch(
+        trackSlice.actions.setTrackPlaying({
+          trackId: track.trackId,
+          isPlaying: true,
+        }),
+      ),
     );
 
     // Start RAF loop
@@ -71,7 +76,12 @@ export function Timeline() {
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     await audioContext.suspend();
     Object.values(tracks).forEach((track) =>
-      dispatch(trackSlice.actions.stopTrack({ trackId: track.trackId })),
+      dispatch(
+        trackSlice.actions.setTrackPlaying({
+          trackId: track.trackId,
+          isPlaying: false,
+        }),
+      ),
     );
   };
 

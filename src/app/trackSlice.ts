@@ -72,17 +72,17 @@ export const trackSlice = createSlice({
         quantize: action.payload.quantize,
       };
     },
-    startTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
-      state[action.payload.trackId].isPlaying = true;
+    setTrackPlaying: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId' | 'isPlaying'>>,
+    ) => {
+      state[action.payload.trackId].isPlaying = action.payload.isPlaying;
     },
-    stopTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
-      state[action.payload.trackId].isPlaying = false;
-    },
-    expandTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
-      state[action.payload.trackId].isExpanded = true;
-    },
-    collapseTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
-      state[action.payload.trackId].isExpanded = false;
+    setTrackExpanded: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId' | 'isExpanded'>>,
+    ) => {
+      state[action.payload.trackId].isExpanded = action.payload.isExpanded;
     },
     addBlock: (
       state,
