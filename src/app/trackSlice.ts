@@ -19,6 +19,11 @@ interface Block {
 
 type TrackPolyphony = 'monophonic' | 'polyphonic';
 
+export const QUANTIZATION_RESOLUTION = {
+  MIN: 1,
+  MAX: 8,
+};
+
 export interface Track {
   trackId: string;
   blocks: Record<string, Block>;
@@ -29,6 +34,10 @@ export interface Track {
   minNote: NoteNameWithOctave;
   maxNote: NoteNameWithOctave;
   isQuantized: boolean;
+  // The resolution should be defined as a factor of the BEAT VALUE
+  // For example, if one beat = one quarter note, then a resolution of 1 = quantize to the quarter note
+  // if resolution = 2, quantize to an 1/8 note
+  quantizationResolution: number;
 }
 
 export type TrackState = Record<string, Track>;
@@ -45,12 +54,18 @@ const initialState: TrackState = {
     minNote: 'A3',
     maxNote: 'A4',
     isQuantized: false,
+    quantizationResolution: 1 / 4,
   },
 };
 
 type AddTrackPayload = Pick<
   Track,
-  'polyphony' | 'name' | 'minNote' | 'maxNote' | 'isQuantized'
+  | 'polyphony'
+  | 'name'
+  | 'minNote'
+  | 'maxNote'
+  | 'isQuantized'
+  | 'quantizationResolution'
 >;
 
 export const trackSlice = createSlice({
@@ -70,6 +85,7 @@ export const trackSlice = createSlice({
         minNote: action.payload.minNote,
         maxNote: action.payload.maxNote,
         isQuantized: action.payload.isQuantized,
+        quantizationResolution: action.payload.quantizationResolution,
       };
     },
     setTrackPlaying: (

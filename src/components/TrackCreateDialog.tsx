@@ -25,15 +25,23 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import * as z from 'zod';
 import { useForm } from '@tanstack/react-form';
 import { useAppDispatch } from '@/app/hooks';
-import { trackSlice } from '@/app/trackSlice';
+import { QUANTIZATION_RESOLUTION, trackSlice } from '@/app/trackSlice';
 import { useState } from 'react';
 import { Checkbox } from './ui/checkbox';
+import { Slider } from './ui/slider';
+
+// TODO: where should we set quantization resolution options?
 
 const trackCreateFormSchema = z
   .object({
     name: z.string().min(1, 'Track name must be at least 1 character long.'),
     polyphony: z.enum(['monophonic', 'polyphonic']),
-    quantize: z.boolean(),
+    isQuantized: z.boolean(),
+    quantizationResolution: z
+      .int()
+      .min(QUANTIZATION_RESOLUTION.MIN)
+      .max(QUANTIZATION_RESOLUTION.MAX)
+      .array(),
   })
   .required();
 
@@ -48,7 +56,8 @@ export const TrackCreateDialog = () => {
     defaultValues: {
       name: `New Track`,
       polyphony: 'polyphonic',
-      quantize: false,
+      isQuantized: false,
+      quantizationResolution: [1],
     },
     validators: {
       onSubmit: trackCreateFormSchema,
@@ -60,7 +69,8 @@ export const TrackCreateDialog = () => {
           name: value.name,
           minNote: 'A3',
           maxNote: 'A4',
-          isQuantized: value.quantize,
+          isQuantized: value.isQuantized,
+          quantizationResolution: value.quantizationResolution[0],
         }),
       );
       setIsOpen(false);
@@ -158,7 +168,7 @@ export const TrackCreateDialog = () => {
             }}
           />
           <form.Field
-            name='quantize'
+            name='isQuantized'
             children={(field) => {
               return (
                 <FieldSet>
@@ -174,6 +184,31 @@ export const TrackCreateDialog = () => {
                         onBlur={field.handleBlur}
                       />
                       <FieldLabel htmlFor={field.name}>Quantize</FieldLabel>
+                    </Field>
+                  </FieldGroup>
+                </FieldSet>
+              );
+            }}
+          />
+          <form.Field
+            name='quantizationResolution'
+            children={(field) => {
+              return (
+                <FieldSet>
+                  <FieldLegend variant='label'>
+                    Quantization Resolution
+                  </FieldLegend>
+                  <FieldGroup>
+                    <Field>
+                      <Slider
+                        id={field.name}
+                        value={field.state.value}
+                        onValueChange={(values) => {
+                          field.handleChange(values);
+                        }}
+                        min={QUANTIZATION_RESOLUTION.MIN}
+                        max={QUANTIZATION_RESOLUTION.MAX}
+                      />
                     </Field>
                   </FieldGroup>
                 </FieldSet>

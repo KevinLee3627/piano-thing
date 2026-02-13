@@ -13,6 +13,7 @@ interface ProjectState {
   timelineScrollLeft: number;
 }
 
+const DEFAULT_BEAT_VALUE = 1 / 4;
 const DEFAULT_BEATS_PER_MEASURE = 4;
 const DEFAULT_TOTAL_MEASURES = 10;
 const DEFAULT_BEATS_PER_MINUTE = 240;
@@ -22,7 +23,6 @@ const DEFAULT_TOTAL_DURATION =
 const DEFAULT_PX_PER_MEASURE_SCALE = 300;
 const DEFAULT_SECONDS_PER_MEASURE =
   DEFAULT_TOTAL_DURATION / DEFAULT_TOTAL_MEASURES;
-const DEFAULT_BEAT_VALUE = 1 / 4;
 
 const initialState: ProjectState = {
   isPlaying: false,

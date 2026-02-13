@@ -53,7 +53,7 @@ export const Block = (props: BlockProps) => {
           setPointerIsPressed(true);
         }
       }}
-      onPointerUp={(e) => {
+      onPointerUp={() => {
         setPointerIsPressed(false);
       }}
       onPointerMove={(e) => {
