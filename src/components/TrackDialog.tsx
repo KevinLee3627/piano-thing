@@ -24,8 +24,12 @@ import { Input } from './ui/input';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import * as z from 'zod';
 import { useForm } from '@tanstack/react-form';
-import { useAppDispatch } from '@/app/hooks';
-import { QUANTIZATION_RESOLUTION, trackSlice } from '@/app/trackSlice';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import {
+  QUANTIZATION_RESOLUTION,
+  trackSlice,
+  type Track,
+} from '@/app/trackSlice';
 import { useState } from 'react';
 import { Checkbox } from './ui/checkbox';
 import { Slider } from './ui/slider';
@@ -47,53 +51,90 @@ const trackCreateFormSchema = z
 
 type TrackCreateFormSchema = z.infer<typeof trackCreateFormSchema>;
 
-export const TrackCreateDialog = () => {
-  const dispatch = useAppDispatch();
+type TrackDialogProps =
+  | { mode: 'create' }
+  | { mode: 'edit'; trackId: Track['trackId'] };
 
+export const TrackDialog = (props: TrackDialogProps) => {
+  const dispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
 
+  const existingTrack =
+    props.mode === 'edit'
+      ? useAppSelector((state) => state.tracks[props.trackId])
+      : null;
+
+  const defaultValues = existingTrack
+    ? {
+        name: existingTrack.name,
+        polyphony: existingTrack.polyphony,
+        isQuantized: existingTrack.isQuantized,
+        quantizationResolution: [existingTrack.quantizationResolution],
+      }
+    : {
+        name: `New Track`,
+        polyphony: 'polyphonic',
+        isQuantized: false,
+        quantizationResolution: [1],
+      };
   const form = useForm({
-    defaultValues: {
-      name: `New Track`,
-      polyphony: 'polyphonic',
-      isQuantized: false,
-      quantizationResolution: [1],
-    },
+    defaultValues,
     validators: {
       onSubmit: trackCreateFormSchema,
     },
     onSubmit: async ({ value }) => {
-      dispatch(
-        trackSlice.actions.addTrack({
-          polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
-          name: value.name,
-          minNote: 'A3',
-          maxNote: 'A4',
-          isQuantized: value.isQuantized,
-          quantizationResolution: value.quantizationResolution[0],
-        }),
-      );
+      if (props.mode === 'create') {
+        dispatch(
+          trackSlice.actions.addTrack({
+            polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
+            name: value.name,
+            minNote: 'A3',
+            maxNote: 'A4',
+            isQuantized: value.isQuantized,
+            quantizationResolution: value.quantizationResolution[0],
+          }),
+        );
+      } else {
+        dispatch(
+          trackSlice.actions.editTrack({
+            trackId: props.trackId,
+            name: value.name,
+            polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
+            isQuantized: value.isQuantized,
+            quantizationResolution: value.quantizationResolution[0],
+          }),
+        );
+      }
+
       setIsOpen(false);
     },
   });
 
+  const isEditing = props.mode === 'edit';
+  const title = isEditing ? 'Edit Track' : 'Add Track';
+  const description = isEditing
+    ? 'Update track options'
+    : 'Specify track options';
+
+  const formId = `track-form-${props.mode}${props.mode === 'edit' ? `-${props.trackId}` : ''}`;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <form
-        id='form-track-create'
-        className='h-12 border-b'
+        id={formId}
+        className='h-12'
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
         }}
       >
         <DialogTrigger asChild>
-          <Button>Add Track</Button>
+          <Button>{title}</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Track</DialogTitle>
-            <DialogDescription>Specify options for new track</DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <form.Field
             name='name'
@@ -219,7 +260,10 @@ export const TrackCreateDialog = () => {
             <DialogClose asChild>
               <Button variant='outline'>Cancel</Button>
             </DialogClose>
-            <Button type='submit' form='form-track-create'>
+            <Button
+              type='submit'
+              form={`track-form-${props.mode}${props.mode === 'edit' ? `-${props.trackId}` : ''}`}
+            >
               Save changes
             </Button>
           </DialogFooter>

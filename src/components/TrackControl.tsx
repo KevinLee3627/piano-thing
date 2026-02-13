@@ -1,6 +1,7 @@
 import { trackSlice, type Track } from '@/app/trackSlice';
 import { Switch } from './ui/switch';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { TrackDialog } from './TrackDialog';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -25,7 +26,8 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
           )
         }
       />
-      <p>{track.quantizationResolution}</p>
+      <TrackDialog mode='edit' trackId={track.trackId} />
+      <p>Q.Res: {track.quantizationResolution}</p>
     </div>
   );
 };

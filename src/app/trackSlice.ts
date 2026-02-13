@@ -35,8 +35,8 @@ export interface Track {
   maxNote: NoteNameWithOctave;
   isQuantized: boolean;
   // The resolution should be defined as a factor of the BEAT VALUE
-  // For example, if one beat = one quarter note, then a resolution of 1 = quantize to the quarter note
-  // if resolution = 2, quantize to an 1/8 note
+  // For example, if one beat = one quarter note = 1/4, then a resolution of 1 = quantize to the quarter note = (1/4) / 1
+  // if resolution = 2, (1/4) / 2 -> quantize to an 1/8 note
   quantizationResolution: number;
 }
 
@@ -53,8 +53,8 @@ const initialState: TrackState = {
     name: 'Track 1',
     minNote: 'A3',
     maxNote: 'A4',
-    isQuantized: false,
-    quantizationResolution: 1 / 4,
+    isQuantized: true,
+    quantizationResolution: QUANTIZATION_RESOLUTION.MIN,
   },
 };
 
@@ -86,6 +86,17 @@ export const trackSlice = createSlice({
         maxNote: action.payload.maxNote,
         isQuantized: action.payload.isQuantized,
         quantizationResolution: action.payload.quantizationResolution,
+      };
+    },
+    editTrack: (
+      state,
+      action: PayloadAction<
+        Pick<Track, 'trackId'> & Partial<Omit<Track, 'trackId' | 'blocks'>>
+      >,
+    ) => {
+      state[action.payload.trackId] = {
+        ...state[action.payload.trackId],
+        ...action.payload,
       };
     },
     setTrackPlaying: (

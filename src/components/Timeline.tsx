@@ -9,7 +9,7 @@ import { Button } from './ui/button';
 import { PauseIcon, PlayIcon } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { TrackControl } from './TrackControl';
-import { TrackCreateDialog } from './TrackCreateDialog';
+import { TrackDialog } from './TrackDialog';
 import { projectSlice } from '@/app/projectSlice';
 
 const FPS = 60;
@@ -133,7 +133,7 @@ export function Timeline() {
       <Separator />
       <div className='flex'>
         <div className='min-w-48 max-w-48 border-r'>
-          <TrackCreateDialog />
+          <TrackDialog mode='create' />
         </div>
         <div
           className='overflow-x-scroll ml-12 no-scrollbar'
