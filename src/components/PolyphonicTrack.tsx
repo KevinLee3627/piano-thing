@@ -68,7 +68,19 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const noteName = notes[clickedIndex];
 
           const duration = project.secondsPerMeasure / project.beatsPerMeasure;
-          const startTime = mouseX / project.pxPerSecondScale;
+          let startTime = mouseX / project.pxPerSecondScale;
+          if (track.isQuantized) {
+            const snapPointGap =
+              project.secondsPerMeasure /
+              project.beatsPerMeasure /
+              track.quantizationResolution;
+            // NOTE: We don't round like we do when quantizing while dragging
+            // Rounding causes us to create the block ahead of where we want it
+            // I think it's due to the fact that dragging is centered on the position
+            // of the cursor within the block, while creation of blocks is centered
+            // around the left edge of the new block.
+            startTime = Math.floor(startTime / snapPointGap) * snapPointGap;
+          }
 
           dispatch(
             trackSlice.actions.addBlock({
@@ -79,7 +91,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               gain: 1,
               dims: {
                 top: clickedIndex * BLOCK_HEIGHT,
-                left: mouseX,
+                left: startTime * project.pxPerSecondScale,
                 width: duration * project.pxPerSecondScale,
                 height: BLOCK_HEIGHT,
               },
