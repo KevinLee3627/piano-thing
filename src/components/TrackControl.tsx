@@ -19,15 +19,10 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
         checked={track.isExpanded}
         onCheckedChange={(checked) =>
           dispatch(
-            checked
-              ? trackSlice.actions.setTrackExpanded({
-                  trackId: track.trackId,
-                  isExpanded: true,
-                })
-              : trackSlice.actions.setTrackExpanded({
-                  trackId: track.trackId,
-                  isExpanded: false,
-                }),
+            trackSlice.actions.setTrackExpanded({
+              trackId: track.trackId,
+              isExpanded: checked,
+            }),
           )
         }
       />
