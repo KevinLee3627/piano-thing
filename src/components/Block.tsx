@@ -53,18 +53,29 @@ export const Block = (props: BlockProps) => {
           setPointerIsPressed(true);
         }
       }}
-      onPointerUp={() => {
+      onPointerUp={(e) => {
         setPointerIsPressed(false);
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
         if (pointerIsPressed) {
-          // Get new left/top positions
-          const newLeft =
+          // mouseX = position relative to rail w/ position within the block and timeline scroll taken into account
+          const mouseX =
             e.clientX -
             props.railDimensions.left -
             diffRef.current +
             project.timelineScrollLeft;
+
+          let newLeft: number;
+          if (trackInfo.isQuantized) {
+            // For a first implementation, a snap point will be at the start of each beat.
+            const snapPointGap =
+              project.pxPerMeasureScale / project.beatsPerMeasure;
+            // Get the previous and next snap point, then see what's closer
+            newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
+          } else {
+            newLeft = mouseX;
+          }
 
           const blockWidth = blockInfo.duration * project.pxPerSecondScale;
           const maxLeft =
