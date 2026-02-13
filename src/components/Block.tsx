@@ -70,7 +70,9 @@ export const Block = (props: BlockProps) => {
           if (trackInfo.isQuantized) {
             // For a first implementation, a snap point will be at the start of each beat.
             const snapPointGap =
-              project.pxPerMeasureScale / project.beatsPerMeasure;
+              project.pxPerMeasureScale /
+              project.beatsPerMeasure /
+              trackInfo.quantizationResolution;
             // Get the previous and next snap point, then see what's closer
             newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
           } else {
