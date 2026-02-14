@@ -50,5 +50,18 @@ export const projectSlice = createSlice({
     updateTimelineScrollLeft: (state, action: PayloadAction<number>) => {
       state.timelineScrollLeft = action.payload;
     },
+    setBeatsPerMinute: (state, action: PayloadAction<number>) => {
+      const newTotalDuration =
+        (state.beatsPerMeasure * state.totalMeasures) / (action.payload / 60);
+      const newSecondsPerMeasure = newTotalDuration / state.totalMeasures;
+      const newPxPerSecondScale =
+        state.pxPerMeasureScale / newSecondsPerMeasure;
+      console.log(newTotalDuration, newSecondsPerMeasure, newPxPerSecondScale);
+
+      state.beatsPerMinute = action.payload;
+      state.totalDuration = newTotalDuration;
+      state.secondsPerMeasure = newSecondsPerMeasure;
+      state.pxPerSecondScale = newPxPerSecondScale;
+    },
   },
 });
