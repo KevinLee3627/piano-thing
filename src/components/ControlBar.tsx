@@ -1,15 +1,10 @@
 import { PauseIcon, PlayIcon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardContent,
-  CardFooter,
-} from './ui/card';
-import { useAppSelector } from '@/app/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useState } from 'react';
+import { Input } from './ui/input';
+import { projectSlice } from '@/app/projectSlice';
+import { trackSlice } from '@/app/trackSlice';
 
 interface ControlBarProps {
   playbackTime: number;
@@ -18,6 +13,7 @@ interface ControlBarProps {
 }
 
 export function ControlBar(props: ControlBarProps) {
+  const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
   const currentMeasure =
     Math.floor(props.playbackTime / project.secondsPerMeasure) + 1;
@@ -27,6 +23,8 @@ export function ControlBar(props: ControlBarProps) {
   const secondsPerBeat = project.secondsPerMeasure / project.beatsPerMeasure;
   const currentBeatInMeasure =
     Math.floor(playbackTimeWithinMeasure / secondsPerBeat) + 1;
+
+  const [isEditingBpm, setIsEditingBpm] = useState(false);
 
   return (
     <div className='flex h-16 justify-center items-center m-2 gap-8'>
@@ -50,8 +48,35 @@ export function ControlBar(props: ControlBarProps) {
       </ToggleGroup>
       <div className='border rounded h-full flex gap-4 px-4'>
         <div className='flex flex-col'>
-          <p className='text-4xl'>{project.beatsPerMinute}</p>
-          <p className='text-xs'>BPM</p>
+          {isEditingBpm ? (
+            <Input
+              type='number'
+              className='text-4xl! w-24 p-0 border-0 h-full'
+              defaultValue={project.beatsPerMinute}
+              autoFocus
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur();
+              }}
+              onBlur={(e) => {
+                const newBeatsPerMinute = parseInt(e.currentTarget.value, 10);
+                if (isNaN(newBeatsPerMinute) || newBeatsPerMinute <= 0) return;
+
+                dispatch(
+                  projectSlice.actions.setBeatsPerMinute(newBeatsPerMinute),
+                );
+
+                setIsEditingBpm(false);
+              }}
+            />
+          ) : (
+            <>
+              <p className='text-4xl' onClick={() => setIsEditingBpm(true)}>
+                {project.beatsPerMinute}
+              </p>
+              <p className='text-xs'>BPM</p>
+            </>
+          )}
         </div>
         <div>
           <p className='text-4xl'>
