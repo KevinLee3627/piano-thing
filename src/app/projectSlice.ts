@@ -63,5 +63,14 @@ export const projectSlice = createSlice({
       state.secondsPerMeasure = newSecondsPerMeasure;
       state.pxPerSecondScale = newPxPerSecondScale;
     },
+    addMeasures: (state, action: PayloadAction<number>) => {
+      const newTotalMeasures = state.totalMeasures + action.payload;
+      const newTotalDuration =
+        (state.beatsPerMeasure * newTotalMeasures) /
+        (state.beatsPerMinute / 60);
+
+      state.totalMeasures = newTotalMeasures;
+      state.totalDuration = newTotalDuration;
+    },
   },
 });

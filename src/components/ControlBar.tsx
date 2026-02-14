@@ -8,13 +8,11 @@ import { trackSlice } from '@/app/trackSlice';
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
 } from './ui/popover';
 import { Button } from './ui/button';
-import { NumberInput } from './ui/number-input';
 
 interface ControlBarProps {
   playbackTime: number;
@@ -142,6 +140,7 @@ export function ControlBar(props: ControlBarProps) {
               <Button
                 onClick={() => {
                   console.log(`add ${measuresToAdd} measures`);
+                  dispatch(projectSlice.actions.addMeasures(measuresToAdd));
                 }}
               >
                 <PlusIcon />
