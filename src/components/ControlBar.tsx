@@ -19,6 +19,15 @@ interface ControlBarProps {
 
 export function ControlBar(props: ControlBarProps) {
   const project = useAppSelector((state) => state.project);
+  const currentMeasure =
+    Math.floor(props.playbackTime / project.secondsPerMeasure) + 1;
+
+  const playbackTimeWithinMeasure =
+    props.playbackTime - (currentMeasure - 1) * project.secondsPerMeasure;
+  const secondsPerBeat = project.secondsPerMeasure / project.beatsPerMeasure;
+  const currentBeatInMeasure =
+    Math.floor(playbackTimeWithinMeasure / secondsPerBeat) + 1;
+
   return (
     <div className='flex h-16 justify-center items-center m-2 gap-8'>
       <ToggleGroup
@@ -48,15 +57,17 @@ export function ControlBar(props: ControlBarProps) {
           <p className='text-4xl'>
             {project.beatsPerMeasure}/{1 / project.beatValue}
           </p>
-          <p className='text-xs'>Time</p>
+          <p className='text-xs'>Time Sig.</p>
         </div>
         <div>
           <p className='text-4xl'>{props.playbackTime.toFixed(2)}s</p>
+          <p className='text-xs'>Playback Time</p>
         </div>
         <div>
           <p className='text-4xl'>
-            {Math.floor(props.playbackTime / project.secondsPerMeasure)}
+            {currentMeasure}.{currentBeatInMeasure}
           </p>
+          <p className='text-xs'>Measure</p>
         </div>
       </div>
     </div>

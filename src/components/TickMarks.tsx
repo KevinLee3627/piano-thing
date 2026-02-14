@@ -17,7 +17,7 @@ export const TickMarks = () => {
               className='absolute border-l border-white h-full'
               style={{ left: `${left}px` }}
             >
-              {i}
+              {i + 1}
             </div>
           );
         })}
