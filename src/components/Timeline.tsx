@@ -48,7 +48,6 @@ export function Timeline() {
     // Other places (like the check above) uses the stored state for UI/rendering purposes.
     if (playbackTimeRef.current >= project.totalDuration) {
       pause();
-      setPlaybackTime(0);
       return;
     }
 

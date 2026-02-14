@@ -1,10 +1,20 @@
-import { PauseIcon, PlayIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, PlusIcon, RulerIcon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { useState } from 'react';
 import { Input } from './ui/input';
 import { projectSlice } from '@/app/projectSlice';
 import { trackSlice } from '@/app/trackSlice';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from './ui/popover';
+import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 
 interface ControlBarProps {
   playbackTime: number;
@@ -16,9 +26,9 @@ export function ControlBar(props: ControlBarProps) {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
   const tracks = useAppSelector((state) => state.tracks);
+
   const currentMeasure =
     Math.floor(props.playbackTime / project.secondsPerMeasure) + 1;
-
   const playbackTimeWithinMeasure =
     props.playbackTime - (currentMeasure - 1) * project.secondsPerMeasure;
   const secondsPerBeat = project.secondsPerMeasure / project.beatsPerMeasure;
@@ -26,6 +36,8 @@ export function ControlBar(props: ControlBarProps) {
     Math.floor(playbackTimeWithinMeasure / secondsPerBeat) + 1;
 
   const [isEditingBpm, setIsEditingBpm] = useState(false);
+
+  const [measuresToAdd, setMeasuresToAdd] = useState(1);
 
   return (
     <div className='flex h-16 justify-center items-center m-2 gap-8'>
@@ -64,6 +76,7 @@ export function ControlBar(props: ControlBarProps) {
                 const newBeatsPerMinute = parseInt(e.currentTarget.value, 10);
                 if (isNaN(newBeatsPerMinute) || newBeatsPerMinute <= 0) return;
 
+                // Update project setting AND rescale block start times/durations/etc.
                 dispatch(
                   projectSlice.actions.setBeatsPerMinute(newBeatsPerMinute),
                 );
@@ -76,7 +89,6 @@ export function ControlBar(props: ControlBarProps) {
                     }),
                   );
                 });
-
                 setIsEditingBpm(false);
               }}
             />
@@ -105,6 +117,38 @@ export function ControlBar(props: ControlBarProps) {
           </p>
           <p className='text-xs'>Measure</p>
         </div>
+      </div>
+      <div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant='outline'>
+              <RulerIcon />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverHeader>
+              <PopoverTitle>Add measures</PopoverTitle>
+            </PopoverHeader>
+            <div className='flex'>
+              <Input
+                type='number'
+                value={measuresToAdd}
+                min={1}
+                onChange={(e) => {
+                  const add = parseInt(e.target.value, 10);
+                  setMeasuresToAdd(add);
+                }}
+              />
+              <Button
+                onClick={() => {
+                  console.log(`add ${measuresToAdd} measures`);
+                }}
+              >
+                <PlusIcon />
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ interface ProjectState {
 const DEFAULT_BEAT_VALUE = 1 / 4;
 const DEFAULT_BEATS_PER_MEASURE = 4;
 const DEFAULT_TOTAL_MEASURES = 10;
-const DEFAULT_BEATS_PER_MINUTE = 60;
+const DEFAULT_BEATS_PER_MINUTE = 120;
 const DEFAULT_TOTAL_DURATION =
   (DEFAULT_BEATS_PER_MEASURE * DEFAULT_TOTAL_MEASURES) /
   (DEFAULT_BEATS_PER_MINUTE / 60); // in seconds
@@ -51,6 +51,7 @@ export const projectSlice = createSlice({
       state.timelineScrollLeft = action.payload;
     },
     setBeatsPerMinute: (state, action: PayloadAction<number>) => {
+      // NOTE: When updating beats per minute, update all values that depend on beats per minute!
       const newTotalDuration =
         (state.beatsPerMeasure * state.totalMeasures) / (action.payload / 60);
       const newSecondsPerMeasure = newTotalDuration / state.totalMeasures;
