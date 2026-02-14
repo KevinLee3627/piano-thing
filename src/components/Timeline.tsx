@@ -5,12 +5,11 @@ import { trackSlice } from '../app/trackSlice';
 import { useEffect, useRef, useState } from 'react';
 import { Playhead } from './Playhead';
 import { TickMarks } from './TickMarks';
-import { Button } from './ui/button';
-import { PauseIcon, PlayIcon } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { TrackControl } from './TrackControl';
 import { TrackDialog } from './TrackDialog';
 import { projectSlice } from '@/app/projectSlice';
+import { ControlBar } from './ControlBar';
 
 const FPS = 60;
 const MS_PER_FRAME = 1000 / FPS;
@@ -117,19 +116,11 @@ export function Timeline() {
 
   return (
     <div className='flex flex-col h-full border border-border rounded-md'>
-      <div id='top-bar' className='flex h-12 justify-center items-center m-2'>
-        <Button
-          className='rounded-full'
-          onClick={async () => await startPlaybackAndUIUpdates()}
-        >
-          <PlayIcon />
-        </Button>
-        <Button className='rounded-full' onClick={async () => await pause()}>
-          <PauseIcon />
-        </Button>
-      </div>
-      <p>playback {playbackTime}</p>
-      <p>audiocontext time {audioContext.currentTime}</p>
+      <ControlBar
+        startPlaybackAndUIUpdates={startPlaybackAndUIUpdates}
+        pause={pause}
+        playbackTime={playbackTime}
+      />
       <Separator />
       <div className='flex'>
         <div className='min-w-48 max-w-48 border-r'>
