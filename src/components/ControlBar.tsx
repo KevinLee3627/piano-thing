@@ -15,6 +15,7 @@ interface ControlBarProps {
 export function ControlBar(props: ControlBarProps) {
   const dispatch = useAppDispatch();
   const project = useAppSelector((state) => state.project);
+  const tracks = useAppSelector((state) => state.tracks);
   const currentMeasure =
     Math.floor(props.playbackTime / project.secondsPerMeasure) + 1;
 
@@ -59,12 +60,22 @@ export function ControlBar(props: ControlBarProps) {
                 if (e.key === 'Enter') e.currentTarget.blur();
               }}
               onBlur={(e) => {
+                const oldBeatsPerMinute = project.beatsPerMinute;
                 const newBeatsPerMinute = parseInt(e.currentTarget.value, 10);
                 if (isNaN(newBeatsPerMinute) || newBeatsPerMinute <= 0) return;
 
                 dispatch(
                   projectSlice.actions.setBeatsPerMinute(newBeatsPerMinute),
                 );
+                Object.values(tracks).forEach((track) => {
+                  dispatch(
+                    trackSlice.actions.rescaleBlocks({
+                      trackId: track.trackId,
+                      oldBeatsPerMinute,
+                      newBeatsPerMinute,
+                    }),
+                  );
+                });
 
                 setIsEditingBpm(false);
               }}

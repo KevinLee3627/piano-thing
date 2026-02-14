@@ -56,7 +56,6 @@ export const projectSlice = createSlice({
       const newSecondsPerMeasure = newTotalDuration / state.totalMeasures;
       const newPxPerSecondScale =
         state.pxPerMeasureScale / newSecondsPerMeasure;
-      console.log(newTotalDuration, newSecondsPerMeasure, newPxPerSecondScale);
 
       state.beatsPerMinute = action.payload;
       state.totalDuration = newTotalDuration;

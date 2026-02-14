@@ -79,9 +79,7 @@ export const Block = (props: BlockProps) => {
             newLeft = mouseX;
           }
 
-          const blockWidth =
-            (project.secondsPerMeasure / project.beatsPerMeasure) *
-            project.pxPerSecondScale;
+          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
           const maxLeft =
             project.totalDuration * project.pxPerSecondScale - blockWidth;

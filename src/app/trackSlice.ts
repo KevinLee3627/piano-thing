@@ -144,5 +144,22 @@ export const trackSlice = createSlice({
         ...action.payload,
       };
     },
+    rescaleBlocks: (
+      state,
+      action: PayloadAction<{
+        trackId: Track['trackId'];
+        oldBeatsPerMinute: number;
+        newBeatsPerMinute: number;
+      }>,
+    ) => {
+      const scale =
+        action.payload.newBeatsPerMinute / action.payload.oldBeatsPerMinute;
+      const trackId = action.payload.trackId;
+
+      Object.values(state[trackId].blocks).forEach((block) => {
+        block.duration /= scale;
+        block.startTime /= scale;
+      });
+    },
   },
 });
