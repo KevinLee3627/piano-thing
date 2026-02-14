@@ -79,7 +79,10 @@ export const Block = (props: BlockProps) => {
             newLeft = mouseX;
           }
 
-          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+          const blockWidth =
+            (project.secondsPerMeasure / project.beatsPerMeasure) *
+            project.pxPerSecondScale;
+
           const maxLeft =
             project.totalDuration * project.pxPerSecondScale - blockWidth;
           const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
