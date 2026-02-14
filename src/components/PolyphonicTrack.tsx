@@ -107,7 +107,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               hsl(49, 52%, 96%) 0px,
               hsl(49, 52%, 96%) 1px,
               transparent 1px,
-              transparent ${(project.pxPerSecondScale * project.secondsPerMeasure) / project.beatsPerMeasure}px
+              transparent ${project.pxPerMeasureScale / project.beatsPerMeasure}px
             ),
             repeating-linear-gradient(
               0deg,
