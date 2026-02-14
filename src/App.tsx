@@ -26,7 +26,7 @@ function App() {
                 <MenubarItem>
                   Total Measures: {project.totalMeasures}
                 </MenubarItem>
-                <MenubarItem>BPM: {project.beatsPerMeasure}</MenubarItem>
+                <MenubarItem>BPM: {project.beatsPerMinute}</MenubarItem>
                 <MenubarItem>Beat Value: {project.beatValue}</MenubarItem>
                 <MenubarItem>
                   Beats Per Measure: {project.beatsPerMeasure}
