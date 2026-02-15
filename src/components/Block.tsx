@@ -63,6 +63,37 @@ const updateCursor = (
   blockRef.current.style.cursor = zone ? 'ew-resize' : 'default';
 };
 
+type PointerMode = 'idle' | 'moving' | 'resizing-left' | 'resizing-right';
+const determinePointerMode = (
+  currentMode: PointerMode,
+  pointerIsPressed: boolean,
+  resizeZone: 'left' | 'right' | null,
+): PointerMode => {
+  // if pointer is not pressed, always return to idle
+  if (!pointerIsPressed) return 'idle';
+
+  // if already in a mode and pointer is still pressed, maintain that mode
+  // This prevents mode switching mid-drag
+  if (currentMode !== 'idle') return currentMode;
+
+  // Determine initial mode when pointer first presses
+  if (resizeZone === 'left') return 'resizing-left';
+  if (resizeZone === 'right') return 'resizing-right';
+  return 'moving';
+};
+
+const getCursorForMode = (mode: PointerMode): string => {
+  switch (mode) {
+    case 'resizing-left':
+    case 'resizing-right':
+      return 'ew-resize';
+    case 'moving':
+    case 'idle':
+    default:
+      return 'default';
+  }
+};
+
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
@@ -78,8 +109,7 @@ export const Block = (props: BlockProps) => {
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
-  const [movingEnabled, setMovingEnabled] = useState(true);
-  const [resizingEnabled, setResizingEnabled] = useState(false);
+  const [pointerMode, setPointerMode] = useState<PointerMode>('idle');
   const mouseTracking = useMouseTracking();
   const blockRef = useRef<HTMLDivElement>(null);
 
@@ -148,40 +178,39 @@ export const Block = (props: BlockProps) => {
     resizeZone: 'left' | 'right',
     dragDirection: 'left' | 'right',
   ) => {
-    if (pointerIsPressed) {
-      setMovingEnabled(false);
-      // We need to handle 4 cases:
-      if (resizeZone === 'left') {
-        // drag left side left
-        if (dragDirection === 'left') {
-          // TODO: Take quuantiztaion into account
-          // TODO: Lots of duplication between this and handleBlockMove...
-          // TODO: Handle when dragging right from left - enforce minimum block width?
-          const newLeft = mouseX;
-          // Return early when trying to drag past start of rail
-          if (newLeft < 0) return;
+    if (!pointerIsPressed) return;
 
-          const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
-          dispatch(
-            trackSlice.actions.editBlock({
-              trackId: props.trackId,
-              blockId: props.blockId,
-              startTime:
-                (newLeft / props.railDimensions.width) * project.totalDuration,
-              duration: newWidth / project.pxPerSecondScale,
-              dims: {
-                ...blockInfo.dims,
-                left: newLeft,
-                width: newWidth,
-              },
-            }),
-          );
-        } else if (dragDirection === 'right') {
-        }
-      } else if (resizeZone === 'right') {
-        // drag right side left
-        // drag right side right
+    // We need to handle 4 cases:
+    if (resizeZone === 'left') {
+      // drag left side left
+      if (dragDirection === 'left') {
+        // TODO: Take quuantiztaion into account
+        // TODO: Lots of duplication between this and handleBlockMove...
+        // TODO: Handle when dragging right from left - enforce minimum block width?
+        const newLeft = mouseX;
+        // Return early when trying to drag past start of rail
+        if (newLeft < 0) return;
+
+        const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
+        dispatch(
+          trackSlice.actions.editBlock({
+            trackId: props.trackId,
+            blockId: props.blockId,
+            startTime:
+              (newLeft / props.railDimensions.width) * project.totalDuration,
+            duration: newWidth / project.pxPerSecondScale,
+            dims: {
+              ...blockInfo.dims,
+              left: newLeft,
+              width: newWidth,
+            },
+          }),
+        );
+      } else if (dragDirection === 'right') {
       }
+    } else if (resizeZone === 'right') {
+      // drag right side left
+      // drag right side right
     }
   };
 
@@ -198,18 +227,25 @@ export const Block = (props: BlockProps) => {
       onPointerDown={(e) => {
         if (blockRef.current != null) {
           // Calculate offset from block's left edge to click position
-          const blockRect = blockRef.current.getBoundingClientRect();
-          diffRef.current = e.clientX - blockRect.left;
+          const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
+
+          diffRef.current = mouseXInBlock;
 
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
           blockRef.current.setPointerCapture(e.pointerId);
           setPointerIsPressed(true);
+
+          // TODO: Can this be calculated in getrseizezone?
+          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+          const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
+
+          const newMode = determinePointerMode('idle', true, resizeZone);
+          setPointerMode(newMode);
         }
       }}
       onPointerUp={() => {
         setPointerIsPressed(false);
-        setResizingEnabled(true);
-        setMovingEnabled(true);
+        setPointerMode('idle');
         // Reset previous mouse position for future resizes
         mouseTracking.reset();
       }}
@@ -231,13 +267,18 @@ export const Block = (props: BlockProps) => {
         const dragDirection = mouseTracking.getDragDirection(mouseX);
 
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
-        if (resizeZone != null && resizingEnabled && dragDirection) {
+        if (pointerIsPressed) {
           // TODO: what happens if two adjacent blocks get resized and you drag into each other?
-          updateCursor(blockRef, resizeZone);
-          handleBlockResize(mouseX, resizeZone, dragDirection);
-        } else if (resizeZone == null && movingEnabled && pointerIsPressed) {
-          updateCursor(blockRef, null);
-          setResizingEnabled(false);
+          blockRef.current.style.cursor = getCursorForMode(pointerMode);
+        } else {
+          blockRef.current.style.cursor = resizeZone ? 'ew-resize' : 'default';
+        }
+
+        if (pointerMode === 'resizing-left' && dragDirection) {
+          handleBlockResize(mouseX, 'left', dragDirection);
+        } else if (pointerMode === 'resizing-right' && dragDirection) {
+          handleBlockResize(mouseX, 'right', dragDirection);
+        } else if (pointerMode === 'moving') {
           handleBlockMove(mouseX, e, blockWidth);
         }
 
