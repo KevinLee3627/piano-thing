@@ -12,6 +12,7 @@ interface BlockProps {
 
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
+const RESIZE_PX_THRESHOLD = 4;
 
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
@@ -58,66 +59,80 @@ export const Block = (props: BlockProps) => {
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
-        if (pointerIsPressed) {
-          // mouseX = position relative to rail w/ position within the block and timeline scroll taken into account
-          const mouseX =
-            e.clientX -
-            props.railDimensions.left -
-            diffRef.current +
-            project.timelineScrollLeft;
+        // mouseX = position relative to rail w/ position within the block and timeline scroll taken into account
+        const mouseX =
+          e.clientX -
+          props.railDimensions.left -
+          diffRef.current +
+          project.timelineScrollLeft;
 
-          let newLeft: number;
-          if (trackInfo.isQuantized) {
-            // For a first implementation, a snap point will be at the start of each beat.
-            const snapPointGap =
-              project.pxPerMeasureScale /
-              project.beatsPerMeasure /
-              trackInfo.quantizationResolution;
-            // Get the previous and next snap point, then see what's closer
-            newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
-          } else {
-            newLeft = mouseX;
+        // x position relative to the left edge of the hovered block
+        const mouseXInBlock =
+          e.clientX - blockRef.current.getBoundingClientRect().left;
+        const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+
+        const isResizing =
+          mouseXInBlock <= RESIZE_PX_THRESHOLD ||
+          mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD;
+        console.log(mouseXInBlock, isResizing);
+
+        if (isResizing) {
+          // console.log('resize!');
+          blockRef.current.style.cursor = 'ew-resize';
+        } else {
+          // Handle Dragging/moving!
+          if (pointerIsPressed) {
+            let newLeft: number;
+            if (trackInfo.isQuantized) {
+              // Defines snap points at every X pixels, depending on resolution
+              const snapPointGap =
+                project.pxPerMeasureScale /
+                project.beatsPerMeasure /
+                trackInfo.quantizationResolution;
+              // Get the previous and next snap point, then see what's closer
+              newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
+            } else {
+              newLeft = mouseX;
+            }
+
+            const maxLeft =
+              project.totalDuration * project.pxPerSecondScale - blockWidth;
+            const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
+
+            const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
+            const newTop = e.clientY - props.railDimensions.top;
+            const discretizedNewTop =
+              Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
+            const constrainedNewTop = Math.max(
+              Math.min(discretizedNewTop, maxTop),
+              0,
+            );
+
+            // Get the new note based on y position
+            // (use constrainedNewTop to stay within bounds of noteRange)
+            const noteIndex = constrainedNewTop / BLOCK_HEIGHT;
+            const newNoteFreq = getNoteFreqByName(noteRange[noteIndex]);
+
+            // Calculate new start time basedd on x position
+            const newStartTime =
+              (constrainedNewLeft / props.railDimensions.width) *
+              project.totalDuration;
+
+            dispatch(
+              trackSlice.actions.editBlock({
+                trackId: props.trackId,
+                blockId: props.blockId,
+                startTime: newStartTime,
+                frequency: newNoteFreq,
+                dims: {
+                  top: constrainedNewTop,
+                  left: constrainedNewLeft,
+                  width: blockWidth,
+                  height: BLOCK_HEIGHT,
+                },
+              }),
+            );
           }
-
-          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
-
-          const maxLeft =
-            project.totalDuration * project.pxPerSecondScale - blockWidth;
-          const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
-
-          const newTop = e.clientY - props.railDimensions.top;
-          const discretizedNewTop =
-            Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
-          const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
-          const constrainedNewTop = Math.max(
-            Math.min(discretizedNewTop, maxTop),
-            0,
-          );
-
-          // Get the new note based on y position
-          // (use constrainedNewTop to stay within bounds of noteRange)
-          const noteIndex = constrainedNewTop / BLOCK_HEIGHT;
-          const newNoteFreq = getNoteFreqByName(noteRange[noteIndex]);
-
-          // Calculate new start time basedd on x position
-          const newStartTime =
-            (constrainedNewLeft / props.railDimensions.width) *
-            project.totalDuration;
-
-          dispatch(
-            trackSlice.actions.editBlock({
-              trackId: props.trackId,
-              blockId: props.blockId,
-              startTime: newStartTime,
-              frequency: newNoteFreq,
-              dims: {
-                top: constrainedNewTop,
-                left: constrainedNewLeft,
-                width: blockWidth,
-                height: BLOCK_HEIGHT,
-              },
-            }),
-          );
         }
       }}
     />
