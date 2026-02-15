@@ -23,7 +23,8 @@ export const Block = (props: BlockProps) => {
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
-  const [enableResizing, setEnableResizing] = useState(false);
+  const [movingEnabled, setMovingEnabled] = useState(true);
+  const [resizingEnabled, setResizingEnabled] = useState(false);
 
   const blockRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +111,8 @@ export const Block = (props: BlockProps) => {
       }}
       onPointerUp={() => {
         setPointerIsPressed(false);
-        setEnableResizing(true);
+        setResizingEnabled(true);
+        setMovingEnabled(true);
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
@@ -131,13 +133,18 @@ export const Block = (props: BlockProps) => {
           mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD;
 
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
-        if (mouseInResizingZones && enableResizing) {
+        if (mouseInResizingZones && resizingEnabled) {
           // console.log('resize!');
           blockRef.current.style.cursor = 'ew-resize';
-        } else {
+          if (pointerIsPressed) {
+            console.log('resizing!');
+            setMovingEnabled(false);
+          }
+        }
+        if (!mouseInResizingZones && movingEnabled) {
           blockRef.current.style.cursor = 'default';
           if (pointerIsPressed) {
-            setEnableResizing(false);
+            setResizingEnabled(false);
             handleBlockMove(mouseX, e, blockWidth);
           }
         }
