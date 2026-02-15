@@ -39,58 +39,51 @@ export const Block = (props: BlockProps) => {
     e: { clientY: number },
     blockWidth: number,
   ) => {
-    if (pointerIsPressed) {
-      let newLeft: number;
-      if (trackInfo.isQuantized) {
-        // Defines snap points at every X pixels, depending on resolution
-        const snapPointGap =
-          project.pxPerMeasureScale /
-          project.beatsPerMeasure /
-          trackInfo.quantizationResolution;
-        // Get the previous and next snap point, then see what's closer
-        newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
-      } else {
-        newLeft = mouseX;
-      }
-
-      const maxLeft =
-        project.totalDuration * project.pxPerSecondScale - blockWidth;
-      const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
-
-      const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
-      const newTop = e.clientY - props.railDimensions.top;
-      const discretizedNewTop =
-        Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
-      const constrainedNewTop = Math.max(
-        Math.min(discretizedNewTop, maxTop),
-        0,
-      );
-
-      // Get the new note based on y position
-      // (use constrainedNewTop to stay within bounds of noteRange)
-      const noteIndex = constrainedNewTop / BLOCK_HEIGHT;
-      const newNoteFreq = getNoteFreqByName(noteRange[noteIndex]);
-
-      // Calculate new start time basedd on x position
-      const newStartTime =
-        (constrainedNewLeft / props.railDimensions.width) *
-        project.totalDuration;
-
-      dispatch(
-        trackSlice.actions.editBlock({
-          trackId: props.trackId,
-          blockId: props.blockId,
-          startTime: newStartTime,
-          frequency: newNoteFreq,
-          dims: {
-            top: constrainedNewTop,
-            left: constrainedNewLeft,
-            width: blockWidth,
-            height: BLOCK_HEIGHT,
-          },
-        }),
-      );
+    let newLeft: number;
+    if (trackInfo.isQuantized) {
+      // Defines snap points at every X pixels, depending on resolution
+      const snapPointGap =
+        project.pxPerMeasureScale /
+        project.beatsPerMeasure /
+        trackInfo.quantizationResolution;
+      // Get the previous and next snap point, then see what's closer
+      newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
+    } else {
+      newLeft = mouseX;
     }
+
+    const maxLeft =
+      project.totalDuration * project.pxPerSecondScale - blockWidth;
+    const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
+
+    const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
+    const newTop = e.clientY - props.railDimensions.top;
+    const discretizedNewTop = Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
+    const constrainedNewTop = Math.max(Math.min(discretizedNewTop, maxTop), 0);
+
+    // Get the new note based on y position
+    // (use constrainedNewTop to stay within bounds of noteRange)
+    const noteIndex = constrainedNewTop / BLOCK_HEIGHT;
+    const newNoteFreq = getNoteFreqByName(noteRange[noteIndex]);
+
+    // Calculate new start time basedd on x position
+    const newStartTime =
+      (constrainedNewLeft / props.railDimensions.width) * project.totalDuration;
+
+    dispatch(
+      trackSlice.actions.editBlock({
+        trackId: props.trackId,
+        blockId: props.blockId,
+        startTime: newStartTime,
+        frequency: newNoteFreq,
+        dims: {
+          top: constrainedNewTop,
+          left: constrainedNewLeft,
+          width: blockWidth,
+          height: BLOCK_HEIGHT,
+        },
+      }),
+    );
   };
 
   return (
@@ -137,6 +130,8 @@ export const Block = (props: BlockProps) => {
 
         // When clicking and dragging - if it's in resize area, don't move
         // if it's not in resize area, move!
+        // Issue when you move a block's position, but by moving mosue horizontally to do so you end up in the resize area
+        // Maybe we - when moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
         if (isResizing) {
           // console.log('resize!');
           blockRef.current.style.cursor = 'ew-resize';
@@ -144,7 +139,9 @@ export const Block = (props: BlockProps) => {
           // Resets cursor CSS
           blockRef.current.style.cursor = 'default';
           // Handle Dragging/moving!
-          handleBlockMove(mouseX, e, blockWidth);
+          if (pointerIsPressed) {
+            handleBlockMove(mouseX, e, blockWidth);
+          }
         }
       }}
     />
