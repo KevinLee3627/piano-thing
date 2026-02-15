@@ -38,6 +38,7 @@ const getResizeZone = (
   return null;
 };
 
+// mouseX = position relative to rail w/ position within the block and timeline scroll taken into account
 const calculateMouseX = (
   e: React.PointerEvent,
   railLeft: number,
@@ -47,20 +48,13 @@ const calculateMouseX = (
   return e.clientX - railLeft - diff + scrollLeft;
 };
 
+// x position relative to the left edge of the hovered block
 const calculateMouseXInBlock = (
   e: React.PointerEvent,
   blockRef: React.RefObject<HTMLDivElement | null>,
 ): number => {
   if (blockRef.current == null) return 0;
   return e.clientX - blockRef.current.getBoundingClientRect().left;
-};
-
-const updateCursor = (
-  blockRef: React.RefObject<HTMLDivElement | null>,
-  zone: 'left' | 'right' | null,
-) => {
-  if (blockRef.current == null) return;
-  blockRef.current.style.cursor = zone ? 'ew-resize' : 'default';
 };
 
 type PointerMode = 'idle' | 'moving' | 'resizing-left' | 'resizing-right';
@@ -98,7 +92,7 @@ const getCursorForMode = (mode: PointerMode): string => {
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
 // TODO: Is this value rasonable? Should threshold and width be adjusted based on scale?
-const MIN_BLOCK_WIDTH = 12; // in px
+const MIN_BLOCK_WIDTH = 20; // in px
 
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
@@ -179,38 +173,45 @@ export const Block = (props: BlockProps) => {
     dragDirection: 'left' | 'right',
   ) => {
     if (!pointerIsPressed) return;
-
-    // We need to handle 4 cases:
+    // TODO: what happens if two adjacent blocks get resized and you drag into each other?
+    // TODO: Quantization
+    // TODO: Min/max handling
     if (resizeZone === 'left') {
-      // drag left side left
-      if (dragDirection === 'left') {
-        // TODO: Take quuantiztaion into account
-        // TODO: Lots of duplication between this and handleBlockMove...
-        // TODO: Handle when dragging right from left - enforce minimum block width?
-        const newLeft = mouseX;
-        // Return early when trying to drag past start of rail
-        if (newLeft < 0) return;
+      const newLeft = mouseX;
+      const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
 
-        const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
-        dispatch(
-          trackSlice.actions.editBlock({
-            trackId: props.trackId,
-            blockId: props.blockId,
-            startTime:
-              (newLeft / props.railDimensions.width) * project.totalDuration,
-            duration: newWidth / project.pxPerSecondScale,
-            dims: {
-              ...blockInfo.dims,
-              left: newLeft,
-              width: newWidth,
-            },
-          }),
-        );
-      } else if (dragDirection === 'right') {
-      }
+      // Check boundaries based on drag direction
+      if (dragDirection === 'left' && newLeft < 0) return;
+      if (dragDirection === 'right' && newWidth < MIN_BLOCK_WIDTH) return;
+
+      dispatch(
+        trackSlice.actions.editBlock({
+          trackId: props.trackId,
+          blockId: props.blockId,
+          startTime:
+            (newLeft / props.railDimensions.width) * project.totalDuration,
+          duration: newWidth / project.pxPerSecondScale,
+          dims: { ...blockInfo.dims, left: newLeft, width: newWidth },
+        }),
+      );
     } else if (resizeZone === 'right') {
-      // drag right side left
-      // drag right side right
+      const newWidth = mouseX - blockInfo.dims.left + diffRef.current;
+      const maxRight = project.totalDuration * project.pxPerSecondScale;
+      if (
+        dragDirection === 'right' &&
+        blockInfo.dims.left + newWidth > maxRight
+      )
+        return;
+      if (dragDirection === 'left' && newWidth < MIN_BLOCK_WIDTH) return;
+
+      dispatch(
+        trackSlice.actions.editBlock({
+          trackId: props.trackId,
+          blockId: props.blockId,
+          duration: newWidth / project.pxPerSecondScale,
+          dims: { ...blockInfo.dims, width: newWidth },
+        }),
+      );
     }
   };
 
@@ -226,9 +227,7 @@ export const Block = (props: BlockProps) => {
       className={cn('absolute', 'bg-primary')}
       onPointerDown={(e) => {
         if (blockRef.current != null) {
-          // Calculate offset from block's left edge to click position
           const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
-
           diffRef.current = mouseXInBlock;
 
           // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
@@ -251,7 +250,6 @@ export const Block = (props: BlockProps) => {
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
-        // mouseX = position relative to rail w/ position within the block and timeline scroll taken into account
         const mouseX = calculateMouseX(
           e,
           props.railDimensions.left,
@@ -259,7 +257,6 @@ export const Block = (props: BlockProps) => {
           project.timelineScrollLeft,
         );
 
-        // x position relative to the left edge of the hovered block
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
@@ -268,7 +265,6 @@ export const Block = (props: BlockProps) => {
 
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
         if (pointerIsPressed) {
-          // TODO: what happens if two adjacent blocks get resized and you drag into each other?
           blockRef.current.style.cursor = getCursorForMode(pointerMode);
         } else {
           blockRef.current.style.cursor = resizeZone ? 'ew-resize' : 'default';
