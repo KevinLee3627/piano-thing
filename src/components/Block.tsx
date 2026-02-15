@@ -236,6 +236,7 @@ export const Block = (props: BlockProps) => {
           updateCursor(blockRef, resizeZone);
           handleBlockResize(mouseX, resizeZone, dragDirection);
         } else if (resizeZone == null && movingEnabled && pointerIsPressed) {
+          updateCursor(blockRef, null);
           setResizingEnabled(false);
           handleBlockMove(mouseX, e, blockWidth);
         }
