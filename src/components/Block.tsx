@@ -90,6 +90,54 @@ export const Block = (props: BlockProps) => {
     );
   };
 
+  const handleBlockResize = (
+    mouseX: number,
+    mouseInLeftResizeZone: boolean,
+    mouseInRightResizeZone: boolean,
+    dragDirection: 'left' | 'right',
+  ) => {
+    if (pointerIsPressed) {
+      setMovingEnabled(false);
+      // We need to handle 4 cases:
+      if (mouseInLeftResizeZone) {
+        // drag left side left
+        if (dragDirection === 'left') {
+          // TODO: Take quuantiztaion into account
+          // TODO: Lots of duplication between this and handleBlockMove...
+          // TODO: Handle when dragging right from left - enforce minimum block width?
+          const newLeft = mouseX;
+          // Return early when trying to drag past start of rail
+          if (newLeft < 0) return;
+
+          const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
+          const newStartTime =
+            (newLeft / props.railDimensions.width) * project.totalDuration;
+          console.log(
+            `curwidth: ${blockInfo.dims.width} - MOSUEx: ${mouseX} - left: ${blockInfo.dims.left}`,
+          );
+          console.log(`newwidth: ${newWidth}`);
+          dispatch(
+            trackSlice.actions.editBlock({
+              trackId: props.trackId,
+              blockId: props.blockId,
+              startTime: newStartTime,
+              duration: newWidth / project.pxPerSecondScale,
+              dims: {
+                ...blockInfo.dims,
+                left: newLeft,
+                width: newWidth,
+              },
+            }),
+          );
+        } else if (dragDirection === 'right') {
+        }
+      } else if (mouseInRightResizeZone) {
+        // drag right side left
+        // drag right side right
+      }
+    }
+  };
+
   return (
     <div
       ref={blockRef}
@@ -144,50 +192,13 @@ export const Block = (props: BlockProps) => {
           if (prevMouseXRef.current == null) return;
           const dragDirection =
             mouseX > prevMouseXRef.current ? 'right' : 'left';
-
+          handleBlockResize(
+            mouseX,
+            mouseInLeftResizeZone,
+            mouseInRightResizeZone,
+            dragDirection,
+          );
           blockRef.current.style.cursor = 'ew-resize';
-          if (pointerIsPressed) {
-            setMovingEnabled(false);
-            // We need to handle 4 cases:
-            if (mouseInLeftResizeZone) {
-              // drag left side left
-              if (dragDirection === 'left') {
-                // TODO: Take quuantiztaion into account
-                // TODO: Lots of duplication between this and handleBlockMove...
-                // TODO: Handle when dragging right from left - enforce minimum block width?
-                const newLeft = mouseX;
-                // Return early when trying to drag past start of rail
-                if (newLeft < 0) return;
-
-                const newWidth =
-                  blockInfo.dims.width + blockInfo.dims.left - mouseX;
-                const newStartTime =
-                  (newLeft / props.railDimensions.width) *
-                  project.totalDuration;
-                console.log(
-                  `curwidth: ${blockInfo.dims.width} - MOSUEx: ${mouseX} - left: ${blockInfo.dims.left}`,
-                );
-                console.log(`newwidth: ${newWidth}`);
-                dispatch(
-                  trackSlice.actions.editBlock({
-                    trackId: props.trackId,
-                    blockId: props.blockId,
-                    startTime: newStartTime,
-                    duration: newWidth / project.pxPerSecondScale,
-                    dims: {
-                      ...blockInfo.dims,
-                      left: newLeft,
-                      width: newWidth,
-                    },
-                  }),
-                );
-              } else if (dragDirection === 'right') {
-              }
-            } else if (mouseInRightResizeZone) {
-              // drag right side left
-              // drag right side right
-            }
-          }
         } else if (!mouseInResizingZones && movingEnabled) {
           blockRef.current.style.cursor = 'default';
           if (pointerIsPressed) {
