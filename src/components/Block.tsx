@@ -25,7 +25,7 @@ export const Block = (props: BlockProps) => {
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
   const [movingEnabled, setMovingEnabled] = useState(true);
   const [resizingEnabled, setResizingEnabled] = useState(false);
-
+  const prevMouseXRef = useRef<number>(null);
   const blockRef = useRef<HTMLDivElement>(null);
 
   const noteRange = useMemo(
@@ -113,6 +113,8 @@ export const Block = (props: BlockProps) => {
         setPointerIsPressed(false);
         setResizingEnabled(true);
         setMovingEnabled(true);
+        // Reset previous mouse position for future resizes
+        prevMouseXRef.current = null;
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
@@ -128,26 +130,77 @@ export const Block = (props: BlockProps) => {
           e.clientX - blockRef.current.getBoundingClientRect().left;
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
-        const mouseInResizingZones =
-          mouseXInBlock <= RESIZE_PX_THRESHOLD ||
+        const mouseInLeftResizeZone = mouseXInBlock <= RESIZE_PX_THRESHOLD;
+        const mouseInRightResizeZone =
           mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD;
+        const mouseInResizingZones =
+          mouseInLeftResizeZone || mouseInRightResizeZone;
 
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
         if (mouseInResizingZones && resizingEnabled) {
-          // console.log('resize!');
+          // TODO: what happens if two adjacent blocks get resized and you drag into each other?
+          if (prevMouseXRef.current == null) return;
+          const dragDirection =
+            mouseX > prevMouseXRef.current ? 'right' : 'left';
+
           blockRef.current.style.cursor = 'ew-resize';
           if (pointerIsPressed) {
-            console.log('resizing!');
             setMovingEnabled(false);
+            // We need to handle 4 cases:
+            if (mouseInLeftResizeZone) {
+              // drag left side left
+              if (dragDirection === 'left') {
+                const newWidth =
+                  blockInfo.dims.width + blockInfo.dims.left - mouseX;
+                // TODO: Take quuantiztaion into account
+                // TODO: Lots of duplication between this and handleBlockMove...
+                const newLeft = mouseX;
+
+                const maxLeft =
+                  project.totalDuration * project.pxPerSecondScale - blockWidth;
+                const constrainedNewLeft = Math.max(
+                  Math.min(newLeft, maxLeft),
+                  0,
+                );
+
+                const newStartTime =
+                  (constrainedNewLeft / props.railDimensions.width) *
+                  project.totalDuration;
+                console.log(
+                  `curwidth: ${blockInfo.dims.width} - MOSUEx: ${mouseX} - left: ${blockInfo.dims.left}`,
+                );
+                console.log(`newwidth: ${newWidth}`);
+                dispatch(
+                  trackSlice.actions.editBlock({
+                    trackId: props.trackId,
+                    blockId: props.blockId,
+                    startTime: newStartTime,
+                    duration: newWidth / project.pxPerSecondScale,
+                    dims: {
+                      ...blockInfo.dims,
+                      left: constrainedNewLeft,
+                      width: newWidth,
+                    },
+                  }),
+                );
+              } else if (dragDirection === 'right') {
+              }
+            } else if (mouseInRightResizeZone) {
+              // drag right side left
+              // drag right side right
+              console.log('right', dragDirection);
+            }
           }
-        }
-        if (!mouseInResizingZones && movingEnabled) {
+        } else if (!mouseInResizingZones && movingEnabled) {
           blockRef.current.style.cursor = 'default';
           if (pointerIsPressed) {
             setResizingEnabled(false);
             handleBlockMove(mouseX, e, blockWidth);
           }
         }
+
+        // Update mousexref for resizes
+        prevMouseXRef.current = mouseX;
       }}
     />
   );
