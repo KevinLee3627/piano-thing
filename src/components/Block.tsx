@@ -29,6 +29,15 @@ const useMouseTracking = () => {
   return { updatePosition, getDragDirection, reset };
 };
 
+const getResizeZone = (
+  mouseXInBlock: number,
+  blockWidth: number,
+): 'left' | 'right' | null => {
+  if (mouseXInBlock <= RESIZE_PX_THRESHOLD) return 'left';
+  if (mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD) return 'right';
+  return null;
+};
+
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
@@ -111,14 +120,13 @@ export const Block = (props: BlockProps) => {
 
   const handleBlockResize = (
     mouseX: number,
-    mouseInLeftResizeZone: boolean,
-    mouseInRightResizeZone: boolean,
+    resizeZone: 'left' | 'right',
     dragDirection: 'left' | 'right',
   ) => {
     if (pointerIsPressed) {
       setMovingEnabled(false);
       // We need to handle 4 cases:
-      if (mouseInLeftResizeZone) {
+      if (resizeZone === 'left') {
         // drag left side left
         if (dragDirection === 'left') {
           // TODO: Take quuantiztaion into account
@@ -145,7 +153,7 @@ export const Block = (props: BlockProps) => {
           );
         } else if (dragDirection === 'right') {
         }
-      } else if (mouseInRightResizeZone) {
+      } else if (resizeZone === 'right') {
         // drag right side left
         // drag right side right
       }
@@ -194,26 +202,17 @@ export const Block = (props: BlockProps) => {
           e.clientX - blockRef.current.getBoundingClientRect().left;
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
-        const mouseInLeftResizeZone = mouseXInBlock <= RESIZE_PX_THRESHOLD;
-        const mouseInRightResizeZone =
-          mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD;
-        const mouseInResizingZones =
-          mouseInLeftResizeZone || mouseInRightResizeZone;
+        const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
 
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
-        if (mouseInResizingZones && resizingEnabled) {
+        if (resizeZone != null && resizingEnabled) {
           // TODO: what happens if two adjacent blocks get resized and you drag into each other?
           const dragDirection = mouseTracking.getDragDirection(mouseX);
           if (dragDirection) {
-            handleBlockResize(
-              mouseX,
-              mouseInLeftResizeZone,
-              mouseInRightResizeZone,
-              dragDirection,
-            );
+            handleBlockResize(mouseX, resizeZone, dragDirection);
           }
           blockRef.current.style.cursor = 'ew-resize';
-        } else if (!mouseInResizingZones && movingEnabled) {
+        } else if (resizeZone == null && movingEnabled) {
           blockRef.current.style.cursor = 'default';
           if (pointerIsPressed) {
             setResizingEnabled(false);
