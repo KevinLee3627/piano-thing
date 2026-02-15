@@ -13,6 +13,8 @@ interface BlockProps {
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
+// TODO: Is this value rasonable? Should threshold and width be adjusted based on scale?
+const MIN_BLOCK_WIDTH = 12; // in px
 
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
@@ -150,21 +152,17 @@ export const Block = (props: BlockProps) => {
             if (mouseInLeftResizeZone) {
               // drag left side left
               if (dragDirection === 'left') {
-                const newWidth =
-                  blockInfo.dims.width + blockInfo.dims.left - mouseX;
                 // TODO: Take quuantiztaion into account
                 // TODO: Lots of duplication between this and handleBlockMove...
+                // TODO: Handle when dragging right from left - enforce minimum block width?
                 const newLeft = mouseX;
+                // Return early when trying to drag past start of rail
+                if (newLeft < 0) return;
 
-                const maxLeft =
-                  project.totalDuration * project.pxPerSecondScale - blockWidth;
-                const constrainedNewLeft = Math.max(
-                  Math.min(newLeft, maxLeft),
-                  0,
-                );
-
+                const newWidth =
+                  blockInfo.dims.width + blockInfo.dims.left - mouseX;
                 const newStartTime =
-                  (constrainedNewLeft / props.railDimensions.width) *
+                  (newLeft / props.railDimensions.width) *
                   project.totalDuration;
                 console.log(
                   `curwidth: ${blockInfo.dims.width} - MOSUEx: ${mouseX} - left: ${blockInfo.dims.left}`,
@@ -178,7 +176,7 @@ export const Block = (props: BlockProps) => {
                     duration: newWidth / project.pxPerSecondScale,
                     dims: {
                       ...blockInfo.dims,
-                      left: constrainedNewLeft,
+                      left: newLeft,
                       width: newWidth,
                     },
                   }),
@@ -188,7 +186,6 @@ export const Block = (props: BlockProps) => {
             } else if (mouseInRightResizeZone) {
               // drag right side left
               // drag right side right
-              console.log('right', dragDirection);
             }
           }
         } else if (!mouseInResizingZones && movingEnabled) {
