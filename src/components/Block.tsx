@@ -226,21 +226,19 @@ export const Block = (props: BlockProps) => {
       }}
       className={cn('absolute', 'bg-primary')}
       onPointerDown={(e) => {
-        if (blockRef.current != null) {
-          const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
-          diffRef.current = mouseXInBlock;
+        if (blockRef.current == null) return;
 
-          // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
-          blockRef.current.setPointerCapture(e.pointerId);
-          setPointerIsPressed(true);
+        const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
+        // TODO: Can this be calculated in getrseizezone? or just have one place to calculate it in case the way we calc changes!
 
-          // TODO: Can this be calculated in getrseizezone?
-          const blockWidth = blockInfo.duration * project.pxPerSecondScale;
-          const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
+        const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+        const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
 
-          const newMode = determinePointerMode('idle', true, resizeZone);
-          setPointerMode(newMode);
-        }
+        diffRef.current = mouseXInBlock;
+        // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
+        blockRef.current.setPointerCapture(e.pointerId);
+        setPointerIsPressed(true);
+        setPointerMode(determinePointerMode('idle', true, resizeZone));
       }}
       onPointerUp={() => {
         setPointerIsPressed(false);
