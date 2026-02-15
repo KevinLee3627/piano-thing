@@ -10,6 +10,25 @@ interface BlockProps {
   railDimensions: { width: number; left: number; top: number; height: number };
 }
 
+const useMouseTracking = () => {
+  const prevMouseXRef = useRef<number | null>(null);
+
+  const updatePosition = (x: number) => {
+    prevMouseXRef.current = x;
+  };
+
+  const getDragDirection = (currentX: number): 'left' | 'right' | null => {
+    if (prevMouseXRef.current === null) return null;
+    return currentX > prevMouseXRef.current ? 'right' : 'left';
+  };
+
+  const reset = () => {
+    prevMouseXRef.current = null;
+  };
+
+  return { updatePosition, getDragDirection, reset };
+};
+
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
@@ -27,7 +46,7 @@ export const Block = (props: BlockProps) => {
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
   const [movingEnabled, setMovingEnabled] = useState(true);
   const [resizingEnabled, setResizingEnabled] = useState(false);
-  const prevMouseXRef = useRef<number>(null);
+  const mouseTracking = useMouseTracking();
   const blockRef = useRef<HTMLDivElement>(null);
 
   const noteRange = useMemo(
@@ -110,17 +129,12 @@ export const Block = (props: BlockProps) => {
           if (newLeft < 0) return;
 
           const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
-          const newStartTime =
-            (newLeft / props.railDimensions.width) * project.totalDuration;
-          console.log(
-            `curwidth: ${blockInfo.dims.width} - MOSUEx: ${mouseX} - left: ${blockInfo.dims.left}`,
-          );
-          console.log(`newwidth: ${newWidth}`);
           dispatch(
             trackSlice.actions.editBlock({
               trackId: props.trackId,
               blockId: props.blockId,
-              startTime: newStartTime,
+              startTime:
+                (newLeft / props.railDimensions.width) * project.totalDuration,
               duration: newWidth / project.pxPerSecondScale,
               dims: {
                 ...blockInfo.dims,
@@ -164,7 +178,7 @@ export const Block = (props: BlockProps) => {
         setResizingEnabled(true);
         setMovingEnabled(true);
         // Reset previous mouse position for future resizes
-        prevMouseXRef.current = null;
+        mouseTracking.reset();
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
@@ -189,15 +203,15 @@ export const Block = (props: BlockProps) => {
         // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
         if (mouseInResizingZones && resizingEnabled) {
           // TODO: what happens if two adjacent blocks get resized and you drag into each other?
-          if (prevMouseXRef.current == null) return;
-          const dragDirection =
-            mouseX > prevMouseXRef.current ? 'right' : 'left';
-          handleBlockResize(
-            mouseX,
-            mouseInLeftResizeZone,
-            mouseInRightResizeZone,
-            dragDirection,
-          );
+          const dragDirection = mouseTracking.getDragDirection(mouseX);
+          if (dragDirection) {
+            handleBlockResize(
+              mouseX,
+              mouseInLeftResizeZone,
+              mouseInRightResizeZone,
+              dragDirection,
+            );
+          }
           blockRef.current.style.cursor = 'ew-resize';
         } else if (!mouseInResizingZones && movingEnabled) {
           blockRef.current.style.cursor = 'default';
@@ -208,7 +222,7 @@ export const Block = (props: BlockProps) => {
         }
 
         // Update mousexref for resizes
-        prevMouseXRef.current = mouseX;
+        mouseTracking.updatePosition(mouseX);
       }}
     />
   );
