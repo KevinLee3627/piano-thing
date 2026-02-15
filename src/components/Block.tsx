@@ -23,6 +23,7 @@ export const Block = (props: BlockProps) => {
   );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
+  const [enableResizing, setEnableResizing] = useState(false);
 
   const blockRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +110,7 @@ export const Block = (props: BlockProps) => {
       }}
       onPointerUp={() => {
         setPointerIsPressed(false);
+        setEnableResizing(true);
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
@@ -124,22 +126,18 @@ export const Block = (props: BlockProps) => {
           e.clientX - blockRef.current.getBoundingClientRect().left;
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
-        const isResizing =
+        const mouseInResizingZones =
           mouseXInBlock <= RESIZE_PX_THRESHOLD ||
           mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD;
 
-        // When clicking and dragging - if it's in resize area, don't move
-        // if it's not in resize area, move!
-        // Issue when you move a block's position, but by moving mosue horizontally to do so you end up in the resize area
-        // Maybe we - when moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
-        if (isResizing) {
+        // When moving block, 'disable'/'block' resizing? Then on pointerUp, we re-enable resizing?
+        if (mouseInResizingZones && enableResizing) {
           // console.log('resize!');
           blockRef.current.style.cursor = 'ew-resize';
         } else {
-          // Resets cursor CSS
           blockRef.current.style.cursor = 'default';
-          // Handle Dragging/moving!
           if (pointerIsPressed) {
+            setEnableResizing(false);
             handleBlockMove(mouseX, e, blockWidth);
           }
         }
