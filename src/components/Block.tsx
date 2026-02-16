@@ -174,11 +174,23 @@ export const Block = (props: BlockProps) => {
   ) => {
     if (!pointerIsPressed) return;
     // TODO: what happens if two adjacent blocks get resized and you drag into each other?
-    // TODO: Quantization
     // TODO: Min/max handling
     if (resizeZone === 'left') {
-      const newLeft = mouseX;
-      const newWidth = blockInfo.dims.width + blockInfo.dims.left - mouseX;
+      let newLeft = mouseX;
+
+      if (trackInfo.isQuantized) {
+        // Defines snap points at every X pixels, depending on resolution
+        const snapPointGap =
+          project.pxPerMeasureScale /
+          project.beatsPerMeasure /
+          trackInfo.quantizationResolution;
+        // Get the previous and next snap point, then see what's closer
+        newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
+      } else {
+        newLeft = mouseX;
+      }
+
+      const newWidth = blockInfo.dims.width + blockInfo.dims.left - newLeft;
 
       // Check boundaries based on drag direction
       if (dragDirection === 'left' && newLeft < 0) return;
@@ -195,7 +207,21 @@ export const Block = (props: BlockProps) => {
         }),
       );
     } else if (resizeZone === 'right') {
-      const newWidth = mouseX - blockInfo.dims.left + diffRef.current;
+      let newWidth = mouseX - blockInfo.dims.left + diffRef.current;
+      if (trackInfo.isQuantized) {
+        // Defines snap points at every X pixels, depending on resolution
+        const snapPointGap =
+          project.pxPerMeasureScale /
+          project.beatsPerMeasure /
+          trackInfo.quantizationResolution;
+        // Get the previous and next snap point, then see what's closer
+        newWidth =
+          Math.round(
+            (mouseX - blockInfo.dims.left + diffRef.current) / snapPointGap,
+          ) * snapPointGap;
+      } else {
+        newWidth = mouseX - blockInfo.dims.left + diffRef.current;
+      }
       const maxRight = project.totalDuration * project.pxPerSecondScale;
       if (
         dragDirection === 'right' &&
