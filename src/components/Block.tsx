@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import { cn } from '@/lib/utils';
@@ -114,24 +114,29 @@ export const Block = (props: BlockProps) => {
 
   const diffRef = useRef(0); // Store offset from click to block's left edge
 
+  const quantizeValue = useCallback(
+    (value: number) => {
+      const snapPointGap =
+        project.pxPerMeasureScale /
+        project.beatsPerMeasure /
+        trackInfo.quantizationResolution;
+
+      return Math.round(value / snapPointGap) * snapPointGap;
+    },
+    [
+      project.pxPerMeasureScale,
+      project.beatsPerMeasure,
+      trackInfo.quantizationResolution,
+    ],
+  );
+
   // TODO: Let's clean these params up...
   const handleBlockMove = (
     mouseX: number,
     e: { clientY: number },
     blockWidth: number,
   ) => {
-    let newLeft: number;
-    if (trackInfo.isQuantized) {
-      // Defines snap points at every X pixels, depending on resolution
-      const snapPointGap =
-        project.pxPerMeasureScale /
-        project.beatsPerMeasure /
-        trackInfo.quantizationResolution;
-      // Get the previous and next snap point, then see what's closer
-      newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
-    } else {
-      newLeft = mouseX;
-    }
+    let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
 
     const maxLeft =
       project.totalDuration * project.pxPerSecondScale - blockWidth;
@@ -176,19 +181,7 @@ export const Block = (props: BlockProps) => {
     // TODO: what happens if two adjacent blocks get resized and you drag into each other?
     // TODO: Min/max handling
     if (resizeZone === 'left') {
-      let newLeft = mouseX;
-
-      if (trackInfo.isQuantized) {
-        // Defines snap points at every X pixels, depending on resolution
-        const snapPointGap =
-          project.pxPerMeasureScale /
-          project.beatsPerMeasure /
-          trackInfo.quantizationResolution;
-        // Get the previous and next snap point, then see what's closer
-        newLeft = Math.round(mouseX / snapPointGap) * snapPointGap;
-      } else {
-        newLeft = mouseX;
-      }
+      let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
 
       const newWidth = blockInfo.dims.width + blockInfo.dims.left - newLeft;
 
@@ -208,20 +201,8 @@ export const Block = (props: BlockProps) => {
       );
     } else if (resizeZone === 'right') {
       let newWidth = mouseX - blockInfo.dims.left + diffRef.current;
-      if (trackInfo.isQuantized) {
-        // Defines snap points at every X pixels, depending on resolution
-        const snapPointGap =
-          project.pxPerMeasureScale /
-          project.beatsPerMeasure /
-          trackInfo.quantizationResolution;
-        // Get the previous and next snap point, then see what's closer
-        newWidth =
-          Math.round(
-            (mouseX - blockInfo.dims.left + diffRef.current) / snapPointGap,
-          ) * snapPointGap;
-      } else {
-        newWidth = mouseX - blockInfo.dims.left + diffRef.current;
-      }
+      newWidth = trackInfo.isQuantized ? quantizeValue(newWidth) : newWidth;
+
       const maxRight = project.totalDuration * project.pxPerSecondScale;
       if (
         dragDirection === 'right' &&
