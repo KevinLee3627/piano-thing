@@ -190,54 +190,64 @@ export const TrackDialog = (props: TrackDialogProps) => {
               );
             }}
           />
-          <form.Field
-            name='polyphony'
-            children={(field) => {
-              const isInvalid =
-                field.state.meta.isTouched && !field.state.meta.isValid;
-              return (
-                <FieldSet>
-                  <FieldLegend variant='label'>Polyphony</FieldLegend>
-                  <RadioGroup
-                    value={field.state.value}
-                    onValueChange={field.handleChange}
-                  >
-                    <FieldLabel htmlFor='track-option-monophonic'>
-                      <Field orientation='horizontal' data-invalid={isInvalid}>
-                        <RadioGroupItem
-                          value='monophonic'
-                          id='track-option-monophonic'
-                          aria-invalid={isInvalid}
-                        />
-                        <FieldContent>
-                          <FieldTitle>Monophonic</FieldTitle>
-                          <FieldDescription>
-                            One pitch/sound only - used for rhythmic tracks
-                          </FieldDescription>
-                        </FieldContent>
-                      </Field>
-                    </FieldLabel>
-                    <FieldLabel htmlFor='track-option-polyphonic'>
-                      <Field orientation='horizontal' data-invalid={isInvalid}>
-                        <RadioGroupItem
-                          value='polyphonic'
-                          id='track-option-polyphonic'
-                          aria-invalid={isInvalid}
-                        />
-                        <FieldContent>
-                          <FieldTitle>Polyphonic</FieldTitle>
-                          <FieldDescription>
-                            Multiple notes at a time
-                          </FieldDescription>
-                        </FieldContent>
-                      </Field>
-                    </FieldLabel>
-                  </RadioGroup>
-                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                </FieldSet>
-              );
-            }}
-          />
+          <FieldSet>
+            <FieldLegend>Polyphony</FieldLegend>
+            <form.Field
+              name='polyphony'
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <FieldGroup>
+                    <RadioGroup
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                    >
+                      <FieldLabel htmlFor='track-option-monophonic'>
+                        <Field
+                          orientation='horizontal'
+                          data-invalid={isInvalid}
+                        >
+                          <RadioGroupItem
+                            value='monophonic'
+                            id='track-option-monophonic'
+                            aria-invalid={isInvalid}
+                          />
+                          <FieldContent>
+                            <FieldTitle>Monophonic</FieldTitle>
+                            <FieldDescription>
+                              One pitch/sound only - used for rhythmic tracks
+                            </FieldDescription>
+                          </FieldContent>
+                        </Field>
+                      </FieldLabel>
+                      <FieldLabel htmlFor='track-option-polyphonic'>
+                        <Field
+                          orientation='horizontal'
+                          data-invalid={isInvalid}
+                        >
+                          <RadioGroupItem
+                            value='polyphonic'
+                            id='track-option-polyphonic'
+                            aria-invalid={isInvalid}
+                          />
+                          <FieldContent>
+                            <FieldTitle>Polyphonic</FieldTitle>
+                            <FieldDescription>
+                              Multiple notes at a time
+                            </FieldDescription>
+                          </FieldContent>
+                        </Field>
+                      </FieldLabel>
+                    </RadioGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldGroup>
+                );
+              }}
+            />
+          </FieldSet>
           <FieldSet>
             <FieldLegend>Quantization</FieldLegend>
             <FieldGroup>
