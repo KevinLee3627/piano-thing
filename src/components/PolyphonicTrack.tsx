@@ -18,7 +18,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   // NOTE: Reverse b/c we want lower notes on the bottom
   const notes = useMemo(
     () => generateNoteRange(track.minNote, track.maxNote).reverse(),
-    [],
+    [track.minNote, track.maxNote],
   );
   const noteElems = useMemo(() => {
     return notes.map((noteName) => (
@@ -33,7 +33,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
         {noteName}
       </div>
     ));
-  }, []);
+  }, [track.minNote, track.maxNote]);
 
   return (
     <div className='flex'>
