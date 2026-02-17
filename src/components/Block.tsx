@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice } from '../app/trackSlice';
 import { cn } from '@/lib/utils';
@@ -47,6 +47,9 @@ const calculateMouseX = (
 ): number => {
   return e.clientX - railLeft - diff + scrollLeft;
 };
+
+const calculateMouseY = (e: React.PointerEvent, railTop: number) =>
+  e.clientY - railTop;
 
 // x position relative to the left edge of the hovered block
 const calculateMouseXInBlock = (
@@ -130,10 +133,9 @@ export const Block = (props: BlockProps) => {
     ],
   );
 
-  // TODO: Let's clean these params up...
   const handleBlockMove = (
     mouseX: number,
-    e: { clientY: number },
+    mouseY: number,
     blockWidth: number,
   ) => {
     let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
@@ -143,7 +145,7 @@ export const Block = (props: BlockProps) => {
     const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
 
     const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
-    const newTop = e.clientY - props.railDimensions.top;
+    const newTop = mouseY;
     const discretizedNewTop = Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
     const constrainedNewTop = Math.max(Math.min(discretizedNewTop, maxTop), 0);
 
@@ -258,14 +260,16 @@ export const Block = (props: BlockProps) => {
       }}
       onPointerMove={(e) => {
         if (blockRef.current == null) return;
+
         const mouseX = calculateMouseX(
           e,
           props.railDimensions.left,
           diffRef.current,
           project.timelineScrollLeft,
         );
-
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
+        const mouseY = calculateMouseY(e, props.railDimensions.top);
+
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 
         const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
@@ -283,7 +287,7 @@ export const Block = (props: BlockProps) => {
         } else if (pointerMode === 'resizing-right' && dragDirection) {
           handleBlockResize(mouseX, 'right', dragDirection);
         } else if (pointerMode === 'moving') {
-          handleBlockMove(mouseX, e, blockWidth);
+          handleBlockMove(mouseX, mouseY, blockWidth);
         }
 
         // Update mousexref for resizes
