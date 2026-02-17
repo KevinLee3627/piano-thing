@@ -1,4 +1,4 @@
-const BASE_KEY = 49; // A4
+const BASE_KEY = 69; // A4 MIDI number
 const BASE_FREQUENCY = 440; // Hz (of A4 key)
 
 type NoteName =
