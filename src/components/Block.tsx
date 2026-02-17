@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { trackSlice } from '../app/trackSlice';
+import { trackSlice, type Track } from '../app/trackSlice';
 import { cn } from '@/lib/utils';
 import { generateNoteRange, getNoteFreqByName } from '@/util/noteUtils';
 
@@ -10,6 +10,12 @@ interface BlockProps {
   railDimensions: { width: number; left: number; top: number; height: number };
 }
 
+type BlockType = Track['blocks'][string];
+
+type DragDirection = 'left' | 'right';
+type ResizeZone = 'left' | 'right';
+type OverlapSide = 'left' | 'right' | 'full';
+
 const useMouseTracking = () => {
   const prevMouseXRef = useRef<number | null>(null);
 
@@ -17,7 +23,7 @@ const useMouseTracking = () => {
     prevMouseXRef.current = x;
   };
 
-  const getDragDirection = (currentX: number): 'left' | 'right' | null => {
+  const getDragDirection = (currentX: number): DragDirection | null => {
     if (prevMouseXRef.current === null) return null;
     return currentX > prevMouseXRef.current ? 'right' : 'left';
   };
@@ -32,7 +38,7 @@ const useMouseTracking = () => {
 const getResizeZone = (
   mouseXInBlock: number,
   blockWidth: number,
-): 'left' | 'right' | null => {
+): ResizeZone | null => {
   if (mouseXInBlock <= RESIZE_PX_THRESHOLD) return 'left';
   if (mouseXInBlock >= blockWidth - RESIZE_PX_THRESHOLD) return 'right';
   return null;
@@ -64,7 +70,7 @@ type PointerMode = 'idle' | 'moving' | 'resizing-left' | 'resizing-right';
 const determinePointerMode = (
   currentMode: PointerMode,
   pointerIsPressed: boolean,
-  resizeZone: 'left' | 'right' | null,
+  resizeZone: ResizeZone | null,
 ): PointerMode => {
   // if pointer is not pressed, always return to idle
   if (!pointerIsPressed) return 'idle';
@@ -89,6 +95,79 @@ const getCursorForMode = (mode: PointerMode): string => {
     default:
       return 'default';
   }
+};
+
+const getOverlapSide = (
+  proposedLeft: number,
+  selectedBlock: BlockType,
+  neighbor: BlockType,
+): OverlapSide | null => {
+  const neighborLeft = neighbor.dims.left;
+  const neighborRight = neighborLeft + neighbor.dims.width;
+
+  const proposedRight = proposedLeft + selectedBlock.dims.width;
+  // You can be 'overlapped' in three scenarios:
+  // block right edge > neighbor left edge AND block left edge < neighbor left edge
+  // block left edge < neighbor right edge AND block right edge > neighbor right edge
+  // all edges are equal (complete overlap)
+  const blockOverlapsNeighborLeftEdge =
+    proposedRight >= neighborLeft && proposedLeft < neighborLeft;
+  if (blockOverlapsNeighborLeftEdge) return 'left';
+
+  const blockOverlapsNeighborRightEdge =
+    proposedLeft < neighborRight && proposedRight > neighborRight;
+  if (blockOverlapsNeighborRightEdge) return 'right';
+
+  const blockOverlapsCompletely =
+    proposedLeft === neighborLeft && proposedRight === neighborRight;
+  if (blockOverlapsCompletely) return 'full';
+
+  return null;
+};
+
+interface HorizontalCollisionParams {
+  proposedLeft: number;
+  selectedBlock: BlockType;
+  allBlocks: Track['blocks'];
+}
+
+const checkHorizontalCollision = ({
+  proposedLeft,
+  selectedBlock,
+  allBlocks,
+  // dragDirection,
+}: HorizontalCollisionParams) => {
+  // Take the proposed left.
+  // Get all neighboring blocks.
+  // What is a neighbor? Neighbor = same frequency/note, not selectedBlock
+  const neighbors = Object.values(allBlocks).filter(
+    (block) =>
+      block.blockId !== selectedBlock.blockId &&
+      block.frequency === selectedBlock.frequency,
+  );
+
+  // Find if block overlaps any neighbors.
+  const overlappedNeighbor = neighbors.find(
+    (neighbor) => getOverlapSide(proposedLeft, selectedBlock, neighbor) != null,
+  );
+
+  if (overlappedNeighbor == null) return proposedLeft;
+
+  // If it does, constrain the x position depending which side of the neighboring block it overlaps.
+  let constrainedLeft = proposedLeft;
+  const overlappedSide = getOverlapSide(
+    proposedLeft,
+    selectedBlock,
+    overlappedNeighbor,
+  );
+
+  if (overlappedSide === 'left') {
+    constrainedLeft = overlappedNeighbor.dims.left - selectedBlock.dims.width;
+  } else {
+    constrainedLeft =
+      overlappedNeighbor.dims.left + overlappedNeighbor.dims.width;
+  }
+  return constrainedLeft;
 };
 
 // TODO: don't hard-code this??
@@ -139,10 +218,18 @@ export const Block = (props: BlockProps) => {
     blockWidth: number,
   ) => {
     let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
-
     const maxLeft =
       project.totalDuration * project.pxPerSecondScale - blockWidth;
-    const constrainedNewLeft = Math.max(Math.min(newLeft, maxLeft), 0);
+    const horizontalCollisionClamp = checkHorizontalCollision({
+      proposedLeft: newLeft,
+      selectedBlock: blockInfo,
+      allBlocks: trackInfo.blocks,
+    });
+
+    const constrainedNewLeft = Math.max(
+      Math.min(horizontalCollisionClamp, maxLeft),
+      0,
+    );
 
     const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
     const newTop = mouseY;
@@ -176,8 +263,8 @@ export const Block = (props: BlockProps) => {
 
   const handleBlockResize = (
     mouseX: number,
-    resizeZone: 'left' | 'right',
-    dragDirection: 'left' | 'right',
+    resizeZone: ResizeZone,
+    dragDirection: DragDirection,
   ) => {
     if (!pointerIsPressed) return;
     // TODO: what happens if two adjacent blocks get resized and you drag into each other?
@@ -233,7 +320,7 @@ export const Block = (props: BlockProps) => {
         top: `${blockInfo.dims.top}px`,
       }}
       className={cn(
-        'absolute bg-primary rounded',
+        'absolute bg-primary rounded text-black',
         pointerIsPressed ? 'border-4 border-foreground' : 'border-0',
       )}
       onPointerDown={(e) => {
@@ -281,6 +368,8 @@ export const Block = (props: BlockProps) => {
           blockRef.current.style.cursor = resizeZone ? 'ew-resize' : 'default';
         }
 
+        // if (dragDirection == null) return;
+
         if (pointerMode === 'resizing-left' && dragDirection) {
           handleBlockResize(mouseX, 'left', dragDirection);
         } else if (pointerMode === 'resizing-right' && dragDirection) {
@@ -292,6 +381,6 @@ export const Block = (props: BlockProps) => {
         // Update mousexref for resizes
         mouseTracking.updatePosition(mouseX);
       }}
-    />
+    ></div>
   );
 };
