@@ -134,6 +134,8 @@ export const TrackDialog = (props: TrackDialogProps) => {
             polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
             isQuantized: value.isQuantized,
             quantizationResolution: value.quantizationResolution[0],
+            minNote: value.minNote as TrackCreateFormSchema['minNote'],
+            maxNote: value.maxNote as TrackCreateFormSchema['maxNote'],
           }),
         );
       }
