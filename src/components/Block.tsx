@@ -231,7 +231,10 @@ export const Block = (props: BlockProps) => {
         left: `${blockInfo.dims.left}px`,
         top: `${blockInfo.dims.top}px`,
       }}
-      className={cn('absolute', 'bg-primary')}
+      className={cn(
+        'absolute bg-primary rounded',
+        pointerIsPressed ? 'border-4 border-foreground' : 'border-0',
+      )}
       onPointerDown={(e) => {
         if (blockRef.current == null) return;
 

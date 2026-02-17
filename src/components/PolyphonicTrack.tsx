@@ -104,15 +104,15 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           style={{
             backgroundImage: `repeating-linear-gradient(
               90deg,
-              hsl(49, 52%, 96%) 0px,
-              hsl(49, 52%, 96%) 1px,
+              hsl(117.1429 23.5955% 17.451%) 0px,
+              hsl(117.1429 23.5955% 17.451%) 1px,
               transparent 1px,
               transparent ${project.pxPerMeasureScale / project.beatsPerMeasure}px
             ),
             repeating-linear-gradient(
               0deg,
-              hsl(49, 52%, 96%) 0px,
-              hsl(49, 52%, 96%) 1px,
+              hsl(117.1429 23.5955% 17.451%) 0px,
+              hsl(117.1429 23.5955% 17.451%) 1px,
               transparent 1px,
               transparent ${BLOCK_HEIGHT}px
             )
