@@ -238,13 +238,13 @@ export const TrackDialog = (props: TrackDialogProps) => {
               );
             }}
           />
-          <form.Field
-            name='isQuantized'
-            children={(field) => {
-              return (
-                <FieldSet>
-                  <FieldLegend variant='label'>Quantization</FieldLegend>
-                  <FieldGroup>
+          <FieldSet>
+            <FieldLegend>Quantization</FieldLegend>
+            <FieldGroup>
+              <form.Field
+                name='isQuantized'
+                children={(field) => {
+                  return (
                     <Field orientation='horizontal'>
                       <Checkbox
                         id={field.name}
@@ -256,36 +256,38 @@ export const TrackDialog = (props: TrackDialogProps) => {
                       />
                       <FieldLabel htmlFor={field.name}>Quantize</FieldLabel>
                     </Field>
-                  </FieldGroup>
-                </FieldSet>
-              );
-            }}
-          />
-          <form.Field
-            name='quantizationResolution'
-            children={(field) => {
-              return (
-                <FieldSet>
-                  <FieldLegend variant='label'>
-                    Quantization Resolution
-                  </FieldLegend>
-                  <FieldGroup>
-                    <Field>
-                      <Slider
-                        id={field.name}
-                        value={field.state.value}
-                        onValueChange={(values) => {
-                          field.handleChange(values);
-                        }}
-                        min={QUANTIZATION_RESOLUTION.MIN}
-                        max={QUANTIZATION_RESOLUTION.MAX}
-                      />
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
-              );
-            }}
-          />
+                  );
+                }}
+              />
+              <form.Subscribe
+                selector={(state) => state.values.isQuantized}
+                children={(isQuantized) =>
+                  isQuantized && (
+                    <form.Field
+                      name='quantizationResolution'
+                      children={(field) => (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            Resolution
+                          </FieldLabel>
+                          <Slider
+                            id={field.name}
+                            value={field.state.value}
+                            onValueChange={(values) => {
+                              field.handleChange(values);
+                            }}
+                            min={QUANTIZATION_RESOLUTION.MIN}
+                            max={QUANTIZATION_RESOLUTION.MAX}
+                          />
+                        </Field>
+                      )}
+                    />
+                  )
+                }
+              />
+            </FieldGroup>
+          </FieldSet>
+
           <FieldSet>
             <FieldLegend>Note Range</FieldLegend>
             <FieldGroup className='grid grid-cols-2 gap-4'>
