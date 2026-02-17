@@ -33,8 +33,16 @@ import {
 import { useState } from 'react';
 import { Checkbox } from './ui/checkbox';
 import { Slider } from './ui/slider';
+import { getNoteFreqByName, type NoteNameWithOctave } from '@/util/noteUtils';
 
-// TODO: where should we set quantization resolution options?
+const isValidNote = (value: string): value is NoteNameWithOctave => {
+  const notePattern = /^(A#|C#|D#|F#|G#|A|B|C|D|E|F|G)([0-9])$/;
+  return notePattern.test(value);
+};
+
+const noteSchema = z.string().refine(isValidNote, {
+  error: 'Must be a valid note (ex: C4, A#3). Only sharps are allowed.',
+});
 
 const trackCreateFormSchema = z
   .object({
@@ -46,8 +54,28 @@ const trackCreateFormSchema = z
       .min(QUANTIZATION_RESOLUTION.MIN)
       .max(QUANTIZATION_RESOLUTION.MAX)
       .array(),
+    minNote: noteSchema,
+    maxNote: noteSchema,
   })
-  .required();
+  .required()
+  .refine(
+    (data) => {
+      try {
+        return (
+          getNoteFreqByName(data.minNote) < getNoteFreqByName(data.maxNote)
+        );
+      } catch {
+        // If getNoteFreqByName throws, it means the format is invalid
+        // Return true here so this refine passes and the field-level error shows instead
+        // Man, this is ugly code
+        return true;
+      }
+    },
+    {
+      message: 'The minimum note should be below the maximum note.',
+      path: ['minNote'],
+    },
+  );
 
 type TrackCreateFormSchema = z.infer<typeof trackCreateFormSchema>;
 
@@ -70,12 +98,16 @@ export const TrackDialog = (props: TrackDialogProps) => {
         polyphony: existingTrack.polyphony,
         isQuantized: existingTrack.isQuantized,
         quantizationResolution: [existingTrack.quantizationResolution],
+        minNote: existingTrack.minNote,
+        maxNote: existingTrack.maxNote,
       }
     : {
         name: `New Track`,
         polyphony: 'polyphonic',
         isQuantized: false,
         quantizationResolution: [1],
+        minNote: 'A3',
+        maxNote: 'A4',
       };
   const form = useForm({
     defaultValues,
@@ -143,9 +175,7 @@ export const TrackDialog = (props: TrackDialogProps) => {
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
                 <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor='track-option-name'>
-                    Track Name
-                  </FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Track Name</FieldLabel>
                   <Input
                     id={field.name}
                     name={field.name}
@@ -256,6 +286,59 @@ export const TrackDialog = (props: TrackDialogProps) => {
               );
             }}
           />
+          <FieldSet>
+            <FieldLegend>Note Range</FieldLegend>
+            <FieldGroup className='grid grid-cols-2 gap-4'>
+              <form.Field
+                name='minNote'
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Minimum Note</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        type='text'
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+              <form.Field
+                name='maxNote'
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Maximum Note</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        type='text'
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+            </FieldGroup>
+          </FieldSet>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant='outline'>Cancel</Button>
