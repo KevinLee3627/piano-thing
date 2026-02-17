@@ -181,7 +181,6 @@ export const Block = (props: BlockProps) => {
   ) => {
     if (!pointerIsPressed) return;
     // TODO: what happens if two adjacent blocks get resized and you drag into each other?
-    // TODO: Min/max handling
     if (resizeZone === 'left') {
       let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
 

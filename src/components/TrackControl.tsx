@@ -33,19 +33,21 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
               project.secondsPerMeasure /
               project.beatsPerMeasure /
               track.quantizationResolution;
-
             Object.values(track.blocks).forEach((block) => {
               const snappedStartTime =
                 Math.round(block.startTime / snapPointGap) * snapPointGap;
+              const snappedDuration =
+                Math.round(block.duration / snapPointGap) * snapPointGap;
+              const newLeft = snappedStartTime * project.pxPerSecondScale;
+              const newWidth = snappedDuration * project.pxPerSecondScale;
+
               dispatch(
                 trackSlice.actions.editBlock({
                   trackId: track.trackId,
                   blockId: block.blockId,
                   startTime: snappedStartTime,
-                  dims: {
-                    ...block.dims,
-                    left: snappedStartTime * project.pxPerSecondScale,
-                  },
+                  duration: snappedDuration,
+                  dims: { ...block.dims, left: newLeft, width: newWidth },
                 }),
               );
             });
