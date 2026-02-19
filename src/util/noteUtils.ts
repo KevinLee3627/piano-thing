@@ -1,4 +1,4 @@
-const BASE_KEY = 69; // A4 MIDI number
+export const BASE_KEY = 69; // A4 MIDI number
 const BASE_FREQUENCY = 440; // Hz (of A4 key)
 
 type NoteName =
@@ -18,25 +18,25 @@ type NoteName =
 export type NoteNameWithOctave = `${NoteName}${number}`;
 
 export const noteMapping: Record<NoteName, number> = {
-  A: 0,
-  'A#': 1,
-  B: 2,
-  C: 3,
-  'C#': 4,
-  D: 5,
-  'D#': 6,
-  E: 7,
-  F: 8,
-  'F#': 9,
-  G: 10,
-  'G#': 11,
+  C: 0,
+  'C#': 1,
+  D: 2,
+  'D#': 3,
+  E: 4,
+  F: 5,
+  'F#': 6,
+  G: 7,
+  'G#': 8,
+  A: 9,
+  'A#': 10,
+  B: 11,
 };
 
 function isNoteName(str: string): str is NoteName {
   return Object.keys(noteMapping).includes(str);
 }
 
-const getNoteNumberByName = (noteName: string): number => {
+export const getNoteNumberByName = (noteName: string): number => {
   if (noteName.length !== 2 && noteName.length !== 3)
     throw new Error('noteName must be 2 or 3 characters long');
 
@@ -51,7 +51,7 @@ const getNoteNumberByName = (noteName: string): number => {
   if (octave == null || octave < 0 || !Number.isInteger(octave))
     throw new Error(`Octave must be an integer greater than or equal to 0`);
 
-  return noteMapping[note] + 12 * octave + 1;
+  return noteMapping[note] + 12 * (octave + 1);
 };
 
 export const getNoteFreqByName = (noteName: string) => {
