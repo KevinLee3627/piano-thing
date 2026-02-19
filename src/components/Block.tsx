@@ -157,7 +157,7 @@ export const Block = (props: BlockProps) => {
     [trackInfo.minNote, trackInfo.maxNote],
   );
 
-  const diffRef = useRef(0); // Store offset from click to block's left edge
+  const clickOffsetRef = useRef(0); // Store offset from click to block's left edge
 
   const quantizeValue = useCallback(
     (value: number) => {
@@ -254,7 +254,7 @@ export const Block = (props: BlockProps) => {
         }),
       );
     } else if (resizeZone === 'right') {
-      let newWidth = mouseX - blockInfo.dims.left + diffRef.current;
+      let newWidth = mouseX - blockInfo.dims.left + clickOffsetRef.current;
       newWidth = trackInfo.isQuantized ? quantizeValue(newWidth) : newWidth;
 
       const maxRight = project.totalDuration * project.pxPerSecondScale;
@@ -298,7 +298,7 @@ export const Block = (props: BlockProps) => {
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
         const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
 
-        diffRef.current = mouseXInBlock;
+        clickOffsetRef.current = mouseXInBlock;
         // NOTE: NEEDED TO KEEP SLIDING AFTER CURSOR LEAVES BOUNDARIES
         blockRef.current.setPointerCapture(e.pointerId);
         setPointerIsPressed(true);
@@ -316,7 +316,7 @@ export const Block = (props: BlockProps) => {
         const mouseX = calculateMouseX(
           e,
           props.railDimensions.left,
-          diffRef.current,
+          clickOffsetRef.current,
           project.timelineScrollLeft,
         );
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
@@ -333,8 +333,6 @@ export const Block = (props: BlockProps) => {
         } else {
           blockRef.current.style.cursor = resizeZone ? 'ew-resize' : 'default';
         }
-
-        // if (dragDirection == null) return;
 
         if (pointerMode === 'resizing-left' && dragDirection) {
           handleBlockResize(mouseX, 'left', dragDirection);
