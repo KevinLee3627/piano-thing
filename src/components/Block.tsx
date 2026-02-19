@@ -14,7 +14,6 @@ type BlockType = Track['blocks'][string];
 
 type DragDirection = 'left' | 'right';
 type ResizeZone = 'left' | 'right';
-type OverlapSide = 'left' | 'right' | 'full';
 
 const useMouseTracking = () => {
   const prevMouseXRef = useRef<number | null>(null);
@@ -97,91 +96,41 @@ const getCursorForMode = (mode: PointerMode): string => {
   }
 };
 
-const getOverlapSide = (
-  proposedLeft: number,
-  selectedBlock: BlockType,
-  neighbor: BlockType,
-): OverlapSide | null => {
-  const neighborLeft = neighbor.dims.left;
-  const neighborRight = neighborLeft + neighbor.dims.width;
-
-  const proposedRight = proposedLeft + selectedBlock.dims.width;
-  // You can be 'overlapped' in three scenarios:
-  // block right edge > neighbor left edge AND block left edge < neighbor left edge
-  // block left edge < neighbor right edge AND block right edge > neighbor right edge
-  // all edges are equal (complete overlap)
-  const blockOverlapsNeighborLeftEdge =
-    proposedRight > neighborLeft && proposedLeft < neighborLeft;
-  if (blockOverlapsNeighborLeftEdge) return 'left';
-
-  const blockOverlapsNeighborRightEdge =
-    proposedLeft < neighborRight && proposedRight > neighborRight;
-  if (blockOverlapsNeighborRightEdge) return 'right';
-
-  const blockOverlapsCompletely =
-    proposedLeft === neighborLeft && proposedRight === neighborRight;
-  if (blockOverlapsCompletely) return 'full';
-
-  return null;
-};
-
-interface HorizontalCollisionParams {
-  proposedLeft: number;
-  selectedBlock: BlockType;
-  allBlocks: Track['blocks'];
-}
-
-const checkHorizontalCollision = ({
-  proposedLeft,
-  selectedBlock,
-  allBlocks,
-  // dragDirection,
-}: HorizontalCollisionParams) => {
-  // Take the proposed x position (left), get all neighboring blocks.
-  // What is a neighbor? Neighbor = same frequency/note, not selectedBlock
-  const neighbors = Object.values(allBlocks).filter(
-    (block) =>
-      block.blockId !== selectedBlock.blockId &&
-      block.frequency === selectedBlock.frequency,
-  );
-
-  // NOTE: How this works - we check if the proposed x position overlaps ANY neighbor.
-  // If it does, just return the original x position. If it doesn't, move the block to the proposed xposition
-  const overlappedNeighbor = neighbors.some((neighbor) =>
-    getOverlapSide(proposedLeft, selectedBlock, neighbor),
-  );
-
-  return overlappedNeighbor ? selectedBlock.dims.left : proposedLeft;
-};
-
-interface VerticalCollisionParams {
+interface CollisionParams {
   proposedLeft: number;
   proposedTop: number;
   selectedBlock: BlockType;
   allBlocks: Track['blocks'];
 }
 
-const checkVerticalCollision = ({
+const checkCollision = ({
   proposedLeft,
   proposedTop,
   selectedBlock,
   allBlocks,
-}: VerticalCollisionParams): number => {
+}: CollisionParams): { left: number; top: number } => {
   const proposedRight = proposedLeft + selectedBlock.dims.width;
-
   const neighbors = Object.values(allBlocks).filter(
-    (block) =>
-      block.blockId !== selectedBlock.blockId && block.dims.top === proposedTop, // same row
+    (block) => block.blockId !== selectedBlock.blockId,
   );
 
-  // Check if any neighbor at the proposed row overlaps horizontally
-  const hasCollision = neighbors.some((neighbor) => {
-    const neighborLeft = neighbor.dims.left;
-    const neighborRight = neighborLeft + neighbor.dims.width;
-    return proposedRight > neighborLeft && proposedLeft < neighborRight;
-  });
+  const horizontalRangeOverlap = (neighbor: BlockType) => {
+    const neighborRight = neighbor.dims.left + neighbor.dims.width;
+    return proposedRight > neighbor.dims.left && proposedLeft < neighborRight;
+  };
 
-  return hasCollision ? selectedBlock.dims.top : proposedTop;
+  const hasHorizontalCollision = neighbors
+    .filter((n) => n.frequency === selectedBlock.frequency)
+    .some((n) => horizontalRangeOverlap(n));
+
+  const hasVerticalCollision = neighbors
+    .filter((n) => n.dims.top === proposedTop)
+    .some((n) => horizontalRangeOverlap(n));
+
+  return {
+    left: hasHorizontalCollision ? selectedBlock.dims.left : proposedLeft,
+    top: hasVerticalCollision ? selectedBlock.dims.top : proposedTop,
+  };
 };
 
 // TODO: don't hard-code this??
@@ -231,27 +180,24 @@ export const Block = (props: BlockProps) => {
     mouseY: number,
     blockWidth: number,
   ) => {
-    let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
+    let proposedLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
     const maxLeft =
       project.totalDuration * project.pxPerSecondScale - blockWidth;
-    const horizontalCollisionClamp = checkHorizontalCollision({
-      proposedLeft: newLeft,
-      selectedBlock: blockInfo,
-      allBlocks: trackInfo.blocks,
-    });
 
-    const constrainedNewLeft = Math.max(
-      Math.min(horizontalCollisionClamp, maxLeft),
+    const constrainedNewLeft = Math.max(Math.min(proposedLeft, maxLeft), 0);
+
+    const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
+    const proposedTop = mouseY;
+    const discretizedProposedTop =
+      Math.floor(proposedTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
+    const constrainedProposedTop = Math.max(
+      Math.min(discretizedProposedTop, maxTop),
       0,
     );
 
-    const maxTop = props.railDimensions.height - BLOCK_HEIGHT;
-    const newTop = mouseY;
-    const discretizedNewTop = Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
-    const constrainedNewTop = Math.max(Math.min(discretizedNewTop, maxTop), 0);
-    const finalNewTop = checkVerticalCollision({
+    const { left: finalNewLeft, top: finalNewTop } = checkCollision({
       proposedLeft: constrainedNewLeft,
-      proposedTop: constrainedNewTop,
+      proposedTop: constrainedProposedTop,
       selectedBlock: blockInfo,
       allBlocks: trackInfo.blocks,
     });
@@ -263,7 +209,7 @@ export const Block = (props: BlockProps) => {
 
     // Calculate new start time basedd on x position
     const newStartTime =
-      (constrainedNewLeft / props.railDimensions.width) * project.totalDuration;
+      (finalNewLeft / props.railDimensions.width) * project.totalDuration;
 
     dispatch(
       trackSlice.actions.editBlock({
@@ -273,7 +219,7 @@ export const Block = (props: BlockProps) => {
         frequency: newNoteFreq,
         dims: {
           top: finalNewTop,
-          left: constrainedNewLeft,
+          left: finalNewLeft,
           width: blockWidth,
           height: BLOCK_HEIGHT,
         },
