@@ -65,9 +65,6 @@ export const generateNoteRange = (
   maxNote: NoteNameWithOctave,
 ): NoteNameWithOctave[] => {
   const noteOrder: NoteName[] = [
-    'A',
-    'A#',
-    'B',
     'C',
     'C#',
     'D',
@@ -77,6 +74,9 @@ export const generateNoteRange = (
     'F#',
     'G',
     'G#',
+    'A',
+    'A#',
+    'B',
   ];
 
   const minNum = getNoteNumberByName(minNote);
@@ -89,8 +89,8 @@ export const generateNoteRange = (
   const result: NoteNameWithOctave[] = [];
 
   for (let n = minNum; n <= maxNum; n++) {
-    const octave = Math.floor((n - 1) / 12);
-    const noteIndex = (n - 1) % 12;
+    const octave = Math.floor(n / 12) - 1;
+    const noteIndex = n % 12;
     const note = noteOrder[noteIndex];
 
     result.push(`${note}${octave}`);

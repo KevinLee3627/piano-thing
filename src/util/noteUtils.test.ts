@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { BASE_KEY, getNoteFreqByName, getNoteNumberByName } from './noteUtils';
+import {
+  BASE_KEY,
+  generateNoteRange,
+  getNoteFreqByName,
+  getNoteNumberByName,
+} from './noteUtils';
 
 describe('getNoteFreqByName', () => {
   test('A4', () => {
@@ -46,5 +51,42 @@ describe('getNoteNumberByName', () => {
   });
   test('Max note - G9', () => {
     expect(getNoteNumberByName('G9')).toBe(127);
+  });
+});
+
+describe('generateNoteRange', () => {
+  test('Single octave', () => {
+    expect(generateNoteRange('C4', 'B4')).toStrictEqual([
+      'C4',
+      'C#4',
+      'D4',
+      'D#4',
+      'E4',
+      'F4',
+      'F#4',
+      'G4',
+      'G#4',
+      'A4',
+      'A#4',
+      'B4',
+    ]);
+  });
+
+  test('Multiple octave', () => {
+    expect(generateNoteRange('C4', 'C5')).toStrictEqual([
+      'C4',
+      'C#4',
+      'D4',
+      'D#4',
+      'E4',
+      'F4',
+      'F#4',
+      'G4',
+      'G#4',
+      'A4',
+      'A#4',
+      'B4',
+      'C5',
+    ]);
   });
 });
