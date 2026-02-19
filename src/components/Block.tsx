@@ -111,7 +111,7 @@ const getOverlapSide = (
   // block left edge < neighbor right edge AND block right edge > neighbor right edge
   // all edges are equal (complete overlap)
   const blockOverlapsNeighborLeftEdge =
-    proposedRight >= neighborLeft && proposedLeft < neighborLeft;
+    proposedRight > neighborLeft && proposedLeft < neighborLeft;
   if (blockOverlapsNeighborLeftEdge) return 'left';
 
   const blockOverlapsNeighborRightEdge =
@@ -137,8 +137,7 @@ const checkHorizontalCollision = ({
   allBlocks,
   // dragDirection,
 }: HorizontalCollisionParams) => {
-  // Take the proposed left.
-  // Get all neighboring blocks.
+  // Take the proposed x position (left), get all neighboring blocks.
   // What is a neighbor? Neighbor = same frequency/note, not selectedBlock
   const neighbors = Object.values(allBlocks).filter(
     (block) =>
@@ -146,28 +145,13 @@ const checkHorizontalCollision = ({
       block.frequency === selectedBlock.frequency,
   );
 
-  // Find if block overlaps any neighbors.
-  const overlappedNeighbor = neighbors.find(
-    (neighbor) => getOverlapSide(proposedLeft, selectedBlock, neighbor) != null,
+  // NOTE: How this works - we check if the proposed x position overlaps ANY neighbor.
+  // If it does, just return the original x position. If it doesn't, move the block to the proposed xposition
+  const overlappedNeighbor = neighbors.some((neighbor) =>
+    getOverlapSide(proposedLeft, selectedBlock, neighbor),
   );
 
-  if (overlappedNeighbor == null) return proposedLeft;
-
-  // If it does, constrain the x position depending which side of the neighboring block it overlaps.
-  let constrainedLeft = proposedLeft;
-  const overlappedSide = getOverlapSide(
-    proposedLeft,
-    selectedBlock,
-    overlappedNeighbor,
-  );
-
-  if (overlappedSide === 'left') {
-    constrainedLeft = overlappedNeighbor.dims.left - selectedBlock.dims.width;
-  } else {
-    constrainedLeft =
-      overlappedNeighbor.dims.left + overlappedNeighbor.dims.width;
-  }
-  return constrainedLeft;
+  return overlappedNeighbor ? selectedBlock.dims.left : proposedLeft;
 };
 
 // TODO: don't hard-code this??
@@ -381,6 +365,8 @@ export const Block = (props: BlockProps) => {
         // Update mousexref for resizes
         mouseTracking.updatePosition(mouseX);
       }}
-    ></div>
+    >
+      {blockInfo.dims.left}
+    </div>
   );
 };
