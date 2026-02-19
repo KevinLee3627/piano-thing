@@ -154,6 +154,36 @@ const checkHorizontalCollision = ({
   return overlappedNeighbor ? selectedBlock.dims.left : proposedLeft;
 };
 
+interface VerticalCollisionParams {
+  proposedLeft: number;
+  proposedTop: number;
+  selectedBlock: BlockType;
+  allBlocks: Track['blocks'];
+}
+
+const checkVerticalCollision = ({
+  proposedLeft,
+  proposedTop,
+  selectedBlock,
+  allBlocks,
+}: VerticalCollisionParams): number => {
+  const proposedRight = proposedLeft + selectedBlock.dims.width;
+
+  const neighbors = Object.values(allBlocks).filter(
+    (block) =>
+      block.blockId !== selectedBlock.blockId && block.dims.top === proposedTop, // same row
+  );
+
+  // Check if any neighbor at the proposed row overlaps horizontally
+  const hasCollision = neighbors.some((neighbor) => {
+    const neighborLeft = neighbor.dims.left;
+    const neighborRight = neighborLeft + neighbor.dims.width;
+    return proposedRight > neighborLeft && proposedLeft < neighborRight;
+  });
+
+  return hasCollision ? selectedBlock.dims.top : proposedTop;
+};
+
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
 const RESIZE_PX_THRESHOLD = 4;
@@ -219,10 +249,16 @@ export const Block = (props: BlockProps) => {
     const newTop = mouseY;
     const discretizedNewTop = Math.floor(newTop / BLOCK_HEIGHT) * BLOCK_HEIGHT;
     const constrainedNewTop = Math.max(Math.min(discretizedNewTop, maxTop), 0);
+    const finalNewTop = checkVerticalCollision({
+      proposedLeft: constrainedNewLeft,
+      proposedTop: constrainedNewTop,
+      selectedBlock: blockInfo,
+      allBlocks: trackInfo.blocks,
+    });
 
     // Get the new note based on y position
     // (use constrainedNewTop to stay within bounds of noteRange)
-    const noteIndex = constrainedNewTop / BLOCK_HEIGHT;
+    const noteIndex = finalNewTop / BLOCK_HEIGHT;
     const newNoteFreq = getNoteFreqByName(noteRange[noteIndex]);
 
     // Calculate new start time basedd on x position
@@ -236,7 +272,7 @@ export const Block = (props: BlockProps) => {
         startTime: newStartTime,
         frequency: newNoteFreq,
         dims: {
-          top: constrainedNewTop,
+          top: finalNewTop,
           left: constrainedNewLeft,
           width: blockWidth,
           height: BLOCK_HEIGHT,
