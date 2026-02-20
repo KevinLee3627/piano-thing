@@ -143,18 +143,26 @@ export const trackSlice = createSlice({
     },
     selectBlock: (
       state,
-      action: PayloadAction<Pick<Track, 'trackId'> & Pick<Block, 'blockId'>>,
+      action: PayloadAction<
+        Pick<Track, 'trackId'> &
+          Pick<Block, 'blockId'> & { multiSelect: boolean }
+      >,
     ) => {
-      const { trackId, blockId } = action.payload;
+      const { trackId, blockId, multiSelect } = action.payload;
       const block = state[trackId].blocks[blockId];
 
-      if (block.isSelected) {
-        block.isSelected = false;
+      if (multiSelect) {
+        // Toggle the clicked block without affecting others
+        block.isSelected = !block.isSelected;
       } else {
-        Object.values(state[trackId].blocks).forEach((b) => {
-          b.isSelected = false;
-        });
-        block.isSelected = true;
+        if (block.isSelected) {
+          block.isSelected = false;
+        } else {
+          Object.values(state[trackId].blocks).forEach((b) => {
+            b.isSelected = false;
+          });
+          block.isSelected = true;
+        }
       }
     },
     deselectAllBlocks: (

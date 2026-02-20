@@ -297,6 +297,7 @@ export const Block = (props: BlockProps) => {
           trackSlice.actions.selectBlock({
             trackId: trackInfo.trackId,
             blockId: blockInfo.blockId,
+            multiSelect: e.shiftKey || e.ctrlKey,
           }),
         );
 
