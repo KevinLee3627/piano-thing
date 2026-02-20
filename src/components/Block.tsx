@@ -289,11 +289,9 @@ export const Block = (props: BlockProps) => {
         'absolute bg-primary rounded text-black',
         blockInfo.isSelected ? 'border-4 border-foreground' : 'border-0',
       )}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
       onPointerDown={(e) => {
         if (blockRef.current == null) return;
+        e.stopPropagation();
 
         dispatch(
           trackSlice.actions.selectBlock({
@@ -301,8 +299,6 @@ export const Block = (props: BlockProps) => {
             blockId: blockInfo.blockId,
           }),
         );
-
-        console.log(blockInfo);
 
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
         // TODO: Can this be calculated in getrseizezone? or just have one place to calculate it in case the way we calc changes!

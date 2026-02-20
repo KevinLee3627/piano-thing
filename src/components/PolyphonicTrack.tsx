@@ -41,7 +41,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
       <div
         ref={trackRef}
         className='relative grow'
-        onMouseDown={(e) => {
+        onPointerDown={(e) => {
           // 0 = left click
           if (e.button !== 0) return;
           // To create note on click...count # of notes - calculate height of one note, divide height of container, find
@@ -119,7 +119,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             )
             `,
           }}
-          onClick={() => {
+          onPointerDown={() => {
             dispatch(
               trackSlice.actions.deselectAllBlocks({ trackId: track.trackId }),
             );
