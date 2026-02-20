@@ -1,7 +1,8 @@
 import { trackSlice, type Track } from '@/app/trackSlice';
-import { Switch } from './ui/switch';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { TrackDialog } from './TrackDialog';
+import { Toggle } from './ui/toggle';
+import { MagnetIcon } from 'lucide-react';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -16,44 +17,45 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
     <div>
       <p>{track.name}</p>
       <TrackDialog mode='edit' trackId={track.trackId} />
-      <Switch
-        id={`track-${track.trackId}-quantize-toggle`}
-        checked={track.isQuantized}
-        onCheckedChange={(checked) => {
+      <Toggle
+        variant={'outline'}
+        pressed={track.isQuantized}
+        onPressedChange={(pressed) => {
           dispatch(
             trackSlice.actions.setTrackQuantized({
               trackId: track.trackId,
-              isQuantized: checked,
+              isQuantized: pressed,
             }),
           );
-          // TODO: Can we not make this 20 levels indented
-          // Quantizes all blocks when switching on
-          if (checked) {
-            const snapPointGap =
-              project.secondsPerMeasure /
-              project.beatsPerMeasure /
-              track.quantizationResolution;
-            Object.values(track.blocks).forEach((block) => {
-              const snappedStartTime =
-                Math.round(block.startTime / snapPointGap) * snapPointGap;
-              const snappedDuration =
-                Math.round(block.duration / snapPointGap) * snapPointGap;
-              const newLeft = snappedStartTime * project.pxPerSecondScale;
-              const newWidth = snappedDuration * project.pxPerSecondScale;
+          if (!pressed) return;
 
-              dispatch(
-                trackSlice.actions.editBlock({
-                  trackId: track.trackId,
-                  blockId: block.blockId,
-                  startTime: snappedStartTime,
-                  duration: snappedDuration,
-                  dims: { ...block.dims, left: newLeft, width: newWidth },
-                }),
-              );
-            });
-          }
+          // Quantizes all blocks when switching on
+          const snapPointGap =
+            project.secondsPerMeasure /
+            project.beatsPerMeasure /
+            track.quantizationResolution;
+          Object.values(track.blocks).forEach((block) => {
+            const snappedStartTime =
+              Math.round(block.startTime / snapPointGap) * snapPointGap;
+            const snappedDuration =
+              Math.round(block.duration / snapPointGap) * snapPointGap;
+            const newLeft = snappedStartTime * project.pxPerSecondScale;
+            const newWidth = snappedDuration * project.pxPerSecondScale;
+
+            dispatch(
+              trackSlice.actions.editBlock({
+                trackId: track.trackId,
+                blockId: block.blockId,
+                startTime: snappedStartTime,
+                duration: snappedDuration,
+                dims: { ...block.dims, left: newLeft, width: newWidth },
+              }),
+            );
+          });
         }}
-      />
+      >
+        <MagnetIcon />
+      </Toggle>
       <p>Q.Res: {track.quantizationResolution}</p>
     </div>
   );
