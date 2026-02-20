@@ -119,6 +119,17 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             )
             `,
           }}
+          // tabIndex is required for onKeyDown
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+              dispatch(
+                trackSlice.actions.deleteSelectedBlocks({
+                  trackId: track.trackId,
+                }),
+              );
+            }
+          }}
           onPointerDown={() => {
             dispatch(
               trackSlice.actions.deselectAllBlocks({ trackId: track.trackId }),

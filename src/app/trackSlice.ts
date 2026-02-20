@@ -174,6 +174,18 @@ export const trackSlice = createSlice({
         block.isSelected = true;
       }
     },
+    deleteSelectedBlocks: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId'>>,
+    ) => {
+      const { trackId } = action.payload;
+      const track = state[trackId];
+      Object.values(track.blocks).forEach((block) => {
+        if (block.isSelected) {
+          delete track.blocks[block.blockId];
+        }
+      });
+    },
     deselectAllBlocks: (
       state,
       action: PayloadAction<Pick<Track, 'trackId'>>,
