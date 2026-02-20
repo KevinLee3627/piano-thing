@@ -147,7 +147,15 @@ export const trackSlice = createSlice({
     ) => {
       const { trackId, blockId } = action.payload;
       const block = state[trackId].blocks[blockId];
-      block.isSelected = !block.isSelected;
+
+      if (block.isSelected) {
+        block.isSelected = false;
+      } else {
+        Object.values(state[trackId].blocks).forEach((b) => {
+          b.isSelected = false;
+        });
+        block.isSelected = true;
+      }
     },
     deselectAllBlocks: (
       state,
