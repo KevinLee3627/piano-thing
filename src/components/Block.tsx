@@ -287,14 +287,25 @@ export const Block = (props: BlockProps) => {
       }}
       className={cn(
         'absolute bg-primary rounded text-black',
-        pointerIsPressed ? 'border-4 border-foreground' : 'border-0',
+        blockInfo.isSelected ? 'border-4 border-foreground' : 'border-0',
       )}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       onPointerDown={(e) => {
         if (blockRef.current == null) return;
 
+        dispatch(
+          trackSlice.actions.selectBlock({
+            trackId: trackInfo.trackId,
+            blockId: blockInfo.blockId,
+          }),
+        );
+
+        console.log(blockInfo);
+
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
         // TODO: Can this be calculated in getrseizezone? or just have one place to calculate it in case the way we calc changes!
-
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
         const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
 

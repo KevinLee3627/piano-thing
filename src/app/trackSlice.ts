@@ -15,6 +15,7 @@ interface Block {
   frequency: number;
   gain: number;
   dims: BlockDimensions;
+  isSelected: boolean;
 }
 
 type TrackPolyphony = 'monophonic' | 'polyphonic';
@@ -58,14 +59,9 @@ const initialState: TrackState = {
   },
 };
 
-type AddTrackPayload = Pick<
+type AddTrackPayload = Omit<
   Track,
-  | 'polyphony'
-  | 'name'
-  | 'minNote'
-  | 'maxNote'
-  | 'isQuantized'
-  | 'quantizationResolution'
+  'trackId' | 'blocks' | 'isPlaying' | 'isExpanded'
 >;
 
 export const trackSlice = createSlice({
@@ -129,6 +125,7 @@ export const trackSlice = createSlice({
         frequency: action.payload.frequency,
         gain: action.payload.gain,
         dims: action.payload.dims,
+        isSelected: action.payload.isSelected,
       };
     },
     editBlock: (
@@ -143,6 +140,23 @@ export const trackSlice = createSlice({
         ...state[trackID].blocks[blockId],
         ...action.payload,
       };
+    },
+    selectBlock: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId'> & Pick<Block, 'blockId'>>,
+    ) => {
+      const { trackId, blockId } = action.payload;
+      const block = state[trackId].blocks[blockId];
+      block.isSelected = !block.isSelected;
+    },
+    deselectAllBlocks: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId'>>,
+    ) => {
+      const track = state[action.payload.trackId];
+      Object.values(track.blocks).forEach((block) => {
+        block.isSelected = false;
+      });
     },
     rescaleBlocks: (
       state,

@@ -95,6 +95,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
                 width: duration * project.pxPerSecondScale,
                 height: BLOCK_HEIGHT,
               },
+              isSelected: true,
             }),
           );
         }}
@@ -117,6 +118,11 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               transparent ${BLOCK_HEIGHT}px
             )
             `,
+          }}
+          onClick={() => {
+            dispatch(
+              trackSlice.actions.deselectAllBlocks({ trackId: track.trackId }),
+            );
           }}
         >
           {Object.entries(track.blocks).map(([blockId, block]) => {
