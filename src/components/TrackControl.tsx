@@ -14,7 +14,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   const project = useAppSelector((state) => state.project);
 
   return (
-    <div>
+    <div className='p-2'>
       <p>{track.name}</p>
       <TrackDialog mode='edit' trackId={track.trackId} />
       <Toggle

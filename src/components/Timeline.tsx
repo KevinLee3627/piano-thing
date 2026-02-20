@@ -185,8 +185,11 @@ export function Timeline() {
           ></div>
         </div>
         {Object.values(tracks).map((track) => (
-          <div key={`track-container-${track.trackId}`} className='flex'>
-            <div className='min-w-48 max-w-48 border-r'>
+          <div
+            key={`track-container-${track.trackId}`}
+            className='flex border-b-8'
+          >
+            <div className='min-w-48 max-w-48 border-r border-b'>
               <TrackControl
                 key={`track-${track.trackId}-controls`}
                 trackId={track.trackId}

@@ -353,8 +353,6 @@ export const Block = (props: BlockProps) => {
         // Update mousexref for resizes
         mouseTracking.updatePosition(mouseX);
       }}
-    >
-      {blockInfo.dims.left}
-    </div>
+    ></div>
   );
 };
