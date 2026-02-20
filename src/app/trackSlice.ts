@@ -113,6 +113,13 @@ export const trackSlice = createSlice({
     ) => {
       state[action.payload.trackId].isQuantized = action.payload.isQuantized;
     },
+    setTrackQuantizationResolution: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId' | 'quantizationResolution'>>,
+    ) => {
+      state[action.payload.trackId].quantizationResolution =
+        action.payload.quantizationResolution;
+    },
     addBlock: (
       state,
       action: PayloadAction<Pick<Track, 'trackId'> & Omit<Block, 'blockId'>>,
