@@ -150,19 +150,28 @@ export const trackSlice = createSlice({
     ) => {
       const { trackId, blockId, multiSelect } = action.payload;
       const block = state[trackId].blocks[blockId];
+      const anyOtherSelected = Object.values(state[trackId].blocks).some(
+        (b) => b.blockId !== blockId && b.isSelected,
+      );
 
       if (multiSelect) {
-        // Toggle the clicked block without affecting others
+        // When ctrl/shift is held down, toggle the states of any blocks clicked
         block.isSelected = !block.isSelected;
-      } else {
-        if (block.isSelected) {
-          block.isSelected = false;
-        } else {
-          Object.values(state[trackId].blocks).forEach((b) => {
-            b.isSelected = false;
-          });
-          block.isSelected = true;
-        }
+      } else if (block.isSelected && anyOtherSelected) {
+        // If multiple blocks are selected, and a selected block is clicked,
+        // focus the clicked block and deselect all others
+        Object.values(state[trackId].blocks).forEach((b) => {
+          b.isSelected = b.blockId === blockId;
+        });
+      } else if (block.isSelected) {
+        // Toggle selection of a block off
+        block.isSelected = false;
+      } else if (!block.isSelected) {
+        // When clicking an unselected block, deselect all other blocks and select the clicked block
+        Object.values(state[trackId].blocks).forEach((b) => {
+          b.isSelected = false;
+        });
+        block.isSelected = true;
       }
     },
     deselectAllBlocks: (
