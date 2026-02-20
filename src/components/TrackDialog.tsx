@@ -120,10 +120,10 @@ export const TrackDialog = (props: TrackDialogProps) => {
           trackSlice.actions.addTrack({
             polyphony: value.polyphony as TrackCreateFormSchema['polyphony'],
             name: value.name,
-            minNote: 'A3',
-            maxNote: 'A4',
             isQuantized: value.isQuantized,
             quantizationResolution: value.quantizationResolution[0],
+            minNote: value.minNote as TrackCreateFormSchema['minNote'],
+            maxNote: value.maxNote as TrackCreateFormSchema['maxNote'],
           }),
         );
       } else {
