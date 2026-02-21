@@ -2,15 +2,26 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { cn } from '@/lib/utils';
 import { Block, BLOCK_HEIGHT } from './Block';
 import { generateNoteRange, getNoteFreqByName } from '@/util/noteUtils';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { trackSlice } from '@/app/trackSlice';
 
 interface PolyphonicTrackProps {
   trackId: string;
 }
 
+interface RailDimensions {
+  width: number;
+  left: number;
+  top: number;
+  height: number;
+}
+
 export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const [railDimensions, setRailDimensions] = useState<RailDimensions | null>(
+    null,
+  );
+
   const track = useAppSelector((state) => state.tracks[props.trackId]);
   const project = useAppSelector((state) => state.project);
   const dispatch = useAppDispatch();
@@ -34,6 +45,27 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
       </div>
     ));
   }, [track.minNote, track.maxNote]);
+
+  useEffect(() => {
+    if (trackRef.current == null) return;
+
+    const updateDimensions = () => {
+      if (trackRef.current == null) return;
+      setRailDimensions({
+        width: trackRef.current.offsetWidth,
+        left: trackRef.current.offsetLeft,
+        top: trackRef.current.offsetTop,
+        height: trackRef.current.offsetHeight,
+      });
+    };
+
+    // measure immediately on mount - fixes bug where blocks don't show when loading from persistence
+    updateDimensions();
+
+    const observer = new ResizeObserver(updateDimensions);
+    observer.observe(trackRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className='flex'>
@@ -136,23 +168,19 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             );
           }}
         >
-          {Object.entries(track.blocks).map(([blockId, block]) => {
-            if (trackRef.current == null) return null;
+          {railDimensions &&
+            Object.entries(track.blocks).map(([blockId, block]) => {
+              if (trackRef.current == null) return null;
 
-            return (
-              <Block
-                key={blockId}
-                trackId={props.trackId}
-                {...block}
-                railDimensions={{
-                  width: trackRef.current.offsetWidth,
-                  left: trackRef.current.offsetLeft,
-                  top: trackRef.current.offsetTop,
-                  height: trackRef.current.offsetHeight,
-                }}
-              />
-            );
-          })}
+              return (
+                <Block
+                  key={blockId}
+                  trackId={props.trackId}
+                  {...block}
+                  railDimensions={railDimensions}
+                />
+              );
+            })}
         </div>
       </div>
     </div>
