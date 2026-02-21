@@ -233,15 +233,31 @@ export const Block = (props: BlockProps) => {
     dragDirection: DragDirection,
   ) => {
     if (!pointerIsPressed) return;
-    // TODO: what happens if two adjacent blocks get resized and you drag into each other?
+    const neighbors = Object.values(trackInfo.blocks).filter(
+      (block) =>
+        block.blockId !== blockInfo.blockId &&
+        block.frequency === blockInfo.frequency,
+    );
+
     if (resizeZone === 'left') {
       let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
 
-      const newWidth = blockInfo.dims.width + blockInfo.dims.left - newLeft;
+      let newWidth = blockInfo.dims.width + blockInfo.dims.left - newLeft;
 
       // Check boundaries based on drag direction
       if (dragDirection === 'left' && newLeft < 0) return;
       if (dragDirection === 'right' && newWidth < MIN_BLOCK_WIDTH) return;
+
+      // Checks for collision
+      // Only care what is to the left of the selected block
+      const relevantNeighbors = neighbors.filter(
+        (neighbor) => neighbor.dims.left < blockInfo.dims.left,
+      );
+      const overlapsNeighbors = relevantNeighbors.some(
+        (neighbor) => newLeft < neighbor.dims.left + neighbor.dims.width,
+      );
+
+      if (overlapsNeighbors) return;
 
       dispatch(
         trackSlice.actions.editBlock({
@@ -258,12 +274,20 @@ export const Block = (props: BlockProps) => {
       newWidth = trackInfo.isQuantized ? quantizeValue(newWidth) : newWidth;
 
       const maxRight = project.totalDuration * project.pxPerSecondScale;
-      if (
-        dragDirection === 'right' &&
-        blockInfo.dims.left + newWidth > maxRight
-      )
-        return;
+      const newRight = blockInfo.dims.left + newWidth;
+      if (dragDirection === 'right' && newRight > maxRight) return;
       if (dragDirection === 'left' && newWidth < MIN_BLOCK_WIDTH) return;
+
+      // Checks for collision
+      // Only care what is to the right of the selected block
+      const relevantNeighbors = neighbors.filter(
+        (neighbor) => neighbor.dims.left > blockInfo.dims.left,
+      );
+      const overlapsNeighbors = relevantNeighbors.some(
+        (neighbor) => newRight > neighbor.dims.left,
+      );
+
+      if (overlapsNeighbors) return;
 
       dispatch(
         trackSlice.actions.editBlock({
