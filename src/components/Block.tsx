@@ -53,8 +53,11 @@ const calculateMouseX = (
   return e.clientX - railLeft - diff + scrollLeft;
 };
 
-const calculateMouseY = (e: React.PointerEvent, railTop: number) =>
-  e.clientY - railTop;
+const calculateMouseY = (
+  e: React.PointerEvent,
+  railTop: number,
+  scrollTop: number,
+) => e.clientY - railTop + scrollTop;
 
 // x position relative to the left edge of the hovered block
 const calculateMouseXInBlock = (
@@ -352,7 +355,11 @@ export const Block = (props: BlockProps) => {
           project.timelineScrollLeft,
         );
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
-        const mouseY = calculateMouseY(e, props.railDimensions.top);
+        const mouseY = calculateMouseY(
+          e,
+          props.railDimensions.top,
+          project.timelineScrollTop,
+        );
 
         const blockWidth = blockInfo.duration * project.pxPerSecondScale;
 

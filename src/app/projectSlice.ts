@@ -11,6 +11,7 @@ interface ProjectState {
   totalMeasures: number;
   beatsPerMinute: number;
   timelineScrollLeft: number;
+  timelineScrollTop: number;
 }
 
 const DEFAULT_BEAT_VALUE = 1 / 4;
@@ -35,6 +36,7 @@ const initialState: ProjectState = {
   totalMeasures: DEFAULT_TOTAL_MEASURES,
   beatsPerMinute: DEFAULT_BEATS_PER_MINUTE,
   timelineScrollLeft: 0,
+  timelineScrollTop: 0,
 };
 
 export const projectSlice = createSlice({
@@ -49,6 +51,9 @@ export const projectSlice = createSlice({
     },
     updateTimelineScrollLeft: (state, action: PayloadAction<number>) => {
       state.timelineScrollLeft = action.payload;
+    },
+    updateTimelineScrollTop: (state, action: PayloadAction<number>) => {
+      state.timelineScrollTop = action.payload;
     },
     setBeatsPerMinute: (state, action: PayloadAction<number>) => {
       // NOTE: When updating beats per minute, update all values that depend on beats per minute!

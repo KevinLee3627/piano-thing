@@ -175,7 +175,17 @@ export function Timeline() {
           </div>
         </div>
       </div>
-      <div id='all-tracks-container' className='overflow-y-auto'>
+      <div
+        id='all-tracks-container'
+        className='overflow-y-auto'
+        onScroll={(e) => {
+          dispatch(
+            projectSlice.actions.updateTimelineScrollTop(
+              e.currentTarget.scrollTop,
+            ),
+          );
+        }}
+      >
         <div id='dummy-rail-container' className='flex'>
           <div className='min-w-48 max-w-48'></div>
           <div
