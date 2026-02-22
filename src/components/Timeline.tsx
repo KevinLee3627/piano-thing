@@ -114,7 +114,7 @@ export function Timeline() {
   }, [playbackTime]);
 
   return (
-    <div className='flex flex-col h-full border border-border rounded-md'>
+    <div className='flex flex-col max-h-full border border-border rounded-md overflow-hidden'>
       <ControlBar
         startPlaybackAndUIUpdates={startPlaybackAndUIUpdates}
         pause={pause}
@@ -175,7 +175,7 @@ export function Timeline() {
           </div>
         </div>
       </div>
-      <div className='flex-col'>
+      <div id='all-tracks-container' className='overflow-y-auto'>
         <div id='dummy-rail-container' className='flex'>
           <div className='min-w-48 max-w-48'></div>
           <div
