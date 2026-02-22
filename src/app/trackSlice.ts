@@ -95,6 +95,9 @@ export const trackSlice = createSlice({
         ...action.payload,
       };
     },
+    deleteTrack: (state, action: PayloadAction<Pick<Track, 'trackId'>>) => {
+      delete state[action.payload.trackId];
+    },
     setTrackPlaying: (
       state,
       action: PayloadAction<Pick<Track, 'trackId' | 'isPlaying'>>,

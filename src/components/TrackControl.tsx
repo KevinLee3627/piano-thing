@@ -6,7 +6,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { TrackDialog } from './TrackDialog';
 import { Toggle } from './ui/toggle';
-import { MagnetIcon } from 'lucide-react';
+import { MagnetIcon, Trash2Icon } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -16,6 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import { Button } from './ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -27,7 +38,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   const project = useAppSelector((state) => state.project);
 
   return (
-    <div className='p-2'>
+    <div className='h-full p-2 flex flex-col gap-2'>
       <p>{track.name}</p>
       <TrackDialog mode='edit' trackId={track.trackId} />
       <div className='flex gap-2'>
@@ -96,6 +107,38 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
             </SelectGroup>
           </SelectContent>
         </Select>
+      </div>
+      <div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant={'destructive'}>
+              <Trash2Icon />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you absolutely sure?</DialogTitle>
+              <DialogDescription>
+                This will permanently delete this track.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant={'outline'}>Cancel</Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button
+                  variant={'destructive'}
+                  onClick={() =>
+                    dispatch(trackSlice.actions.deleteTrack({ trackId }))
+                  }
+                >
+                  Delete
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
