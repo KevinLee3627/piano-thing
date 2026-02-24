@@ -33,16 +33,7 @@ import {
 import { useState } from 'react';
 import { Checkbox } from './ui/checkbox';
 import { Slider } from './ui/slider';
-import { getNoteFreqByName, type NoteNameWithOctave } from '@/util/noteUtils';
-
-const isValidNote = (value: string): value is NoteNameWithOctave => {
-  const notePattern = /^(A#|C#|D#|F#|G#|A|B|C|D|E|F|G)([0-9])$/;
-  return notePattern.test(value);
-};
-
-const noteSchema = z.string().refine(isValidNote, {
-  error: 'Must be a valid note (ex: C4, A#3). Only sharps are allowed.',
-});
+import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
 
 const trackCreateFormSchema = z
   .object({
@@ -58,24 +49,10 @@ const trackCreateFormSchema = z
     maxNote: noteSchema,
   })
   .required()
-  .refine(
-    (data) => {
-      try {
-        return (
-          getNoteFreqByName(data.minNote) < getNoteFreqByName(data.maxNote)
-        );
-      } catch {
-        // If getNoteFreqByName throws, it means the format is invalid
-        // Return true here so this refine passes and the field-level error shows instead
-        // Man, this is ugly code
-        return true;
-      }
-    },
-    {
-      message: 'The minimum note should be below the maximum note.',
-      path: ['minNote'],
-    },
-  );
+  .refine((data) => validateMinMaxNotes(data.minNote, data.maxNote), {
+    message: 'The minimum note should be below the maximum note.',
+    path: ['minNote'],
+  });
 
 type TrackCreateFormSchema = z.infer<typeof trackCreateFormSchema>;
 

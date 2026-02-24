@@ -27,6 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
+import { Input } from './ui/input';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -107,6 +108,10 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
             </SelectGroup>
           </SelectContent>
         </Select>
+      </div>
+      <div className='flex gap-2'>
+        <Input defaultValue={track.minNote} />
+        <Input defaultValue={track.maxNote} />
       </div>
       <div>
         <Dialog>
