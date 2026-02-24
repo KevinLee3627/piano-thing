@@ -210,6 +210,9 @@ export function Timeline() {
               className='overflow-x-scroll no-scrollbar'
               ref={(el) => {
                 trackRailRefs.current[track.trackId] = el;
+                if (el && topRowRef.current) {
+                  el.scrollLeft = topRowRef.current.scrollLeft;
+                }
               }}
               onScroll={(e) => {
                 // Only sync if user scrolled this rail
