@@ -28,6 +28,11 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 import { Input } from './ui/input';
+import z from 'zod';
+import { useForm } from '@tanstack/react-form';
+import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
+import type { NoteNameWithOctave } from '@/util/noteUtils';
+import { Field, FieldError } from './ui/field';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -38,6 +43,31 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   const track = useAppSelector((state) => state.tracks[trackId]);
   const project = useAppSelector((state) => state.project);
 
+  const form = useForm({
+    defaultValues: {
+      minNote: track.minNote as string,
+      maxNote: track.maxNote as string,
+    },
+    validators: {
+      onBlur: ({ value }) => {
+        if (!validateMinMaxNotes(value.minNote, value.maxNote)) {
+          return {
+            message: 'The minimum note must be below the maximum note.',
+          };
+        }
+        return undefined;
+      },
+    },
+    onSubmit: async ({ value }) => {
+      dispatch(
+        trackSlice.actions.editTrack({
+          trackId: track.trackId,
+          minNote: value.minNote as NoteNameWithOctave,
+          maxNote: value.maxNote as NoteNameWithOctave,
+        }),
+      );
+    },
+  });
   return (
     <div className='h-full p-2 flex flex-col gap-2'>
       <p>{track.name}</p>
@@ -109,10 +139,74 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
           </SelectContent>
         </Select>
       </div>
-      <div className='flex gap-2'>
-        <Input defaultValue={track.minNote} />
-        <Input defaultValue={track.maxNote} />
-      </div>
+      <form
+        onBlur={() => {
+          if (form.state.isValid) {
+            form.handleSubmit();
+          }
+        }}
+      >
+        <div className='flex gap-2'>
+          <form.Field
+            name='minNote'
+            validators={{
+              onBlur: ({ value }) => {
+                const result = noteSchema.safeParse(value);
+                return result.success
+                  ? undefined
+                  : { message: result.error.issues[0]?.message };
+              },
+            }}
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field>
+                  <Input
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    aria-invalid={isInvalid}
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+          <form.Field
+            name='maxNote'
+            validators={{
+              onBlur: ({ value }) => {
+                const result = noteSchema.safeParse(value);
+                return result.success
+                  ? undefined
+                  : { message: result.error.issues[0]?.message };
+              },
+            }}
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field>
+                  <Input
+                    id={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    aria-invalid={isInvalid}
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
+          />
+        </div>
+        {/* Form-level error for min > max */}
+        <form.Subscribe selector={(state) => state.errors}>
+          {(errors) => errors.length > 0 && <FieldError errors={errors} />}
+        </form.Subscribe>
+      </form>
       <div>
         <Dialog>
           <DialogTrigger asChild>
