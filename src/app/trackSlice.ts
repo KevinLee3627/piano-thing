@@ -222,5 +222,37 @@ export const trackSlice = createSlice({
         block.startTime /= scale;
       });
     },
+    snapBlocksToGrid: (
+      state,
+      action: PayloadAction<{
+        trackId: Track['trackId'];
+        secondsPerMeasure: number;
+        beatsPerMeasure: number;
+        pxPerSecondScale: number;
+      }>,
+    ) => {
+      const { trackId, secondsPerMeasure, beatsPerMeasure, pxPerSecondScale } =
+        action.payload;
+      const track = state[trackId];
+      if (!track.isQuantized) return;
+
+      const snapPointGap =
+        secondsPerMeasure / beatsPerMeasure / track.quantizationResolution;
+
+      Object.values(track.blocks).forEach((block) => {
+        const snappedStartTime =
+          Math.round(block.startTime / snapPointGap) * snapPointGap;
+        const snappedDuration = Math.max(
+          snapPointGap,
+          Math.round(block.duration / snapPointGap) * snapPointGap,
+        );
+        const newLeft = snappedStartTime * pxPerSecondScale;
+        const newWidth = snappedDuration * pxPerSecondScale;
+        block.startTime = snappedStartTime;
+        block.duration = snappedDuration;
+        block.dims.left = newLeft;
+        block.dims.width = newWidth;
+      });
+    },
   },
 });

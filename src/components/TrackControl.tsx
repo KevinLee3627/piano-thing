@@ -84,29 +84,14 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
             );
             if (!pressed) return;
 
-            // Quantizes all blocks when switching on
-            const snapPointGap =
-              project.secondsPerMeasure /
-              project.beatsPerMeasure /
-              track.quantizationResolution;
-            Object.values(track.blocks).forEach((block) => {
-              const snappedStartTime =
-                Math.round(block.startTime / snapPointGap) * snapPointGap;
-              const snappedDuration =
-                Math.round(block.duration / snapPointGap) * snapPointGap;
-              const newLeft = snappedStartTime * project.pxPerSecondScale;
-              const newWidth = snappedDuration * project.pxPerSecondScale;
-
-              dispatch(
-                trackSlice.actions.editBlock({
-                  trackId: track.trackId,
-                  blockId: block.blockId,
-                  startTime: snappedStartTime,
-                  duration: snappedDuration,
-                  dims: { ...block.dims, left: newLeft, width: newWidth },
-                }),
-              );
-            });
+            dispatch(
+              trackSlice.actions.snapBlocksToGrid({
+                trackId: track.trackId,
+                secondsPerMeasure: project.secondsPerMeasure,
+                beatsPerMeasure: project.beatsPerMeasure,
+                pxPerSecondScale: project.pxPerSecondScale,
+              }),
+            );
           }}
         >
           <MagnetIcon />
