@@ -77,5 +77,24 @@ export const projectSlice = createSlice({
       state.totalMeasures = newTotalMeasures;
       state.totalDuration = newTotalDuration;
     },
+    setTimeSignature: (
+      state,
+      action: PayloadAction<
+        Pick<ProjectState, 'beatValue' | 'beatsPerMeasure'>
+      >,
+    ) => {
+      const { beatValue, beatsPerMeasure } = action.payload;
+      const newTotalDuration =
+        (beatsPerMeasure * state.totalMeasures) / (state.beatsPerMinute / 60);
+      const newSecondsPerMeasure = newTotalDuration / state.totalMeasures;
+      const newPxPerSecondScale =
+        state.pxPerMeasureScale / newSecondsPerMeasure;
+
+      state.beatValue = beatValue;
+      state.beatsPerMeasure = beatsPerMeasure;
+      state.totalDuration = newTotalDuration;
+      state.secondsPerMeasure = newSecondsPerMeasure;
+      state.pxPerSecondScale = newPxPerSecondScale;
+    },
   },
 });

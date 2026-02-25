@@ -207,19 +207,14 @@ export const trackSlice = createSlice({
     },
     rescaleBlocks: (
       state,
-      action: PayloadAction<{
-        trackId: Track['trackId'];
-        oldBeatsPerMinute: number;
-        newBeatsPerMinute: number;
-      }>,
+      action: PayloadAction<{ trackId: Track['trackId']; factor: number }>,
     ) => {
-      const scale =
-        action.payload.newBeatsPerMinute / action.payload.oldBeatsPerMinute;
+      const { factor } = action.payload;
       const trackId = action.payload.trackId;
 
       Object.values(state[trackId].blocks).forEach((block) => {
-        block.duration /= scale;
-        block.startTime /= scale;
+        block.duration /= factor;
+        block.startTime /= factor;
       });
     },
     snapBlocksToGrid: (

@@ -13,6 +13,13 @@ import {
   PopoverTrigger,
 } from './ui/popover';
 import { Button } from './ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 
 interface ControlBarProps {
   playbackTime: number;
@@ -37,6 +44,53 @@ export function ControlBar(props: ControlBarProps) {
   const [isEditingTimeSignature, setIsEditingTimeSignature] = useState(false);
 
   const [measuresToAdd, setMeasuresToAdd] = useState(1);
+
+  const handleTimeSignatureChange = (
+    newBeatsPerMeasure: number,
+    newBeatValue: number,
+  ) => {
+    const oldBeatValue = project.beatValue;
+    const oldBeatsPerMinute = project.beatsPerMinute;
+    const newBeatsPerMinute = oldBeatsPerMinute * (newBeatValue / (1 / 4));
+
+    dispatch(
+      projectSlice.actions.setTimeSignature({
+        beatsPerMeasure: newBeatsPerMeasure,
+        beatValue: newBeatValue,
+      }),
+    );
+
+    const newSecondsPerMeasure =
+      (newBeatsPerMeasure * project.totalMeasures) /
+      (project.beatsPerMinute / 60) /
+      project.totalMeasures;
+    const newPxPerSecondScale =
+      project.pxPerMeasureScale / newSecondsPerMeasure;
+
+    Object.values(tracks).forEach((track) => {
+      // If beat value changed, rescale block times proportionally (like BPM change)
+      if (newBeatValue !== oldBeatValue) {
+        dispatch(
+          trackSlice.actions.rescaleBlocks({
+            trackId: track.trackId,
+            factor: newBeatsPerMinute / oldBeatsPerMinute,
+          }),
+        );
+      }
+
+      // Re-snap quantized tracks to the new grid
+      if (track.isQuantized) {
+        dispatch(
+          trackSlice.actions.snapBlocksToGrid({
+            trackId: track.trackId,
+            secondsPerMeasure: newSecondsPerMeasure,
+            beatsPerMeasure: newBeatsPerMeasure,
+            pxPerSecondScale: newPxPerSecondScale,
+          }),
+        );
+      }
+    });
+  };
 
   return (
     <div className='flex h-16 justify-center items-center m-2 gap-8'>
@@ -83,8 +137,7 @@ export function ControlBar(props: ControlBarProps) {
                   dispatch(
                     trackSlice.actions.rescaleBlocks({
                       trackId: track.trackId,
-                      oldBeatsPerMinute,
-                      newBeatsPerMinute,
+                      factor: newBeatsPerMinute / oldBeatsPerMinute,
                     }),
                   );
                 });
@@ -107,18 +160,40 @@ export function ControlBar(props: ControlBarProps) {
                 // Beats Per Measure
                 className='text-4xl! h-full'
                 defaultValue={project.beatsPerMeasure}
-                autoFocus
                 onFocus={(e) => e.target.select()}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.currentTarget.blur();
                 }}
-                onBlur={() => {}}
+                onBlur={(e) => {
+                  handleTimeSignatureChange(
+                    parseInt(e.target.value),
+                    project.beatValue,
+                  );
+                  setIsEditingTimeSignature(false);
+                }}
               />
               <span className='text-4xl'>/</span>
-              <Input
-                className='text-4xl! h-full'
-                defaultValue={project.beatValue}
-              />
+              <Select
+                defaultValue={String(1 / project.beatValue)}
+                onValueChange={(v) => {
+                  handleTimeSignatureChange(
+                    project.beatsPerMeasure,
+                    1 / parseInt(v),
+                  );
+                  setIsEditingTimeSignature(false);
+                }}
+              >
+                <SelectTrigger className='w-16'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 4, 8, 16].map((v) => (
+                    <SelectItem key={v} value={String(v)}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           ) : (
             <>
