@@ -28,7 +28,6 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 import { Input } from './ui/input';
-import z from 'zod';
 import { useForm } from '@tanstack/react-form';
 import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
 import type { NoteNameWithOctave } from '@/util/noteUtils';

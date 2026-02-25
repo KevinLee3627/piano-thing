@@ -34,6 +34,7 @@ export function ControlBar(props: ControlBarProps) {
     Math.floor(playbackTimeWithinMeasure / secondsPerBeat) + 1;
 
   const [isEditingBpm, setIsEditingBpm] = useState(false);
+  const [isEditingTimeSignature, setIsEditingTimeSignature] = useState(false);
 
   const [measuresToAdd, setMeasuresToAdd] = useState(1);
 
@@ -100,10 +101,36 @@ export function ControlBar(props: ControlBarProps) {
           )}
         </div>
         <div>
-          <p className='text-4xl'>
-            {project.beatsPerMeasure}/{1 / project.beatValue}
-          </p>
-          <p className='text-xs'>Time Sig.</p>
+          {isEditingTimeSignature ? (
+            <div className='flex w-32'>
+              <Input
+                // Beats Per Measure
+                className='text-4xl! h-full'
+                defaultValue={project.beatsPerMeasure}
+                autoFocus
+                onFocus={(e) => e.target.select()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur();
+                }}
+                onBlur={() => {}}
+              />
+              <span className='text-4xl'>/</span>
+              <Input
+                className='text-4xl! h-full'
+                defaultValue={project.beatValue}
+              />
+            </div>
+          ) : (
+            <>
+              <p
+                className='text-4xl'
+                onClick={() => setIsEditingTimeSignature(true)}
+              >
+                {project.beatsPerMeasure}/{1 / project.beatValue}
+              </p>
+              <p className='text-xs'>Time Sig.</p>
+            </>
+          )}
         </div>
         <div>
           <p className='text-4xl'>{props.playbackTime.toFixed(2)}s</p>
