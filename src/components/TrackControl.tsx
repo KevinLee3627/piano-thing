@@ -44,6 +44,9 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
 
   const form = useForm({
     defaultValues: {
+      name: track.name,
+      isQuantized: track.isQuantized,
+      quantizationResolution: track.quantizationResolution,
       minNote: track.minNote as string,
       maxNote: track.maxNote as string,
     },
@@ -61,74 +64,110 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
       dispatch(
         trackSlice.actions.editTrack({
           trackId: track.trackId,
+          name: value.name,
+          isQuantized: value.isQuantized,
+          quantizationResolution: value.quantizationResolution,
           minNote: value.minNote as NoteNameWithOctave,
           maxNote: value.maxNote as NoteNameWithOctave,
         }),
       );
+
+      // Snap to grid if quantized is being turned on
+      if (value.isQuantized) {
+        dispatch(
+          trackSlice.actions.snapBlocksToGrid({
+            trackId: track.trackId,
+            secondsPerMeasure: project.secondsPerMeasure,
+            beatsPerMeasure: project.beatsPerMeasure,
+            pxPerSecondScale: project.pxPerSecondScale,
+          }),
+        );
+      }
     },
   });
-  return (
-    <div className='h-full p-2 flex flex-col gap-2'>
-      <p>{track.name}</p>
-      <div className='flex gap-2'>
-        <Toggle
-          variant={'outline'}
-          pressed={track.isQuantized}
-          onPressedChange={(pressed) => {
-            dispatch(
-              trackSlice.actions.setTrackQuantized({
-                trackId: track.trackId,
-                isQuantized: pressed,
-              }),
-            );
-            if (!pressed) return;
 
-            dispatch(
-              trackSlice.actions.snapBlocksToGrid({
-                trackId: track.trackId,
-                secondsPerMeasure: project.secondsPerMeasure,
-                beatsPerMeasure: project.beatsPerMeasure,
-                pxPerSecondScale: project.pxPerSecondScale,
-              }),
-            );
-          }}
-        >
-          <MagnetIcon />
-        </Toggle>
-        <Select
-          defaultValue={String(track.quantizationResolution)}
-          onValueChange={(value) => {
-            const newResolution = Number(value);
-            dispatch(
-              trackSlice.actions.setTrackQuantizationResolution({
-                trackId: track.trackId,
-                quantizationResolution: newResolution,
-              }),
-            );
-          }}
-        >
-          <SelectTrigger className='w-full max-w-48'>
-            <SelectValue placeholder='Quant. Res' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Quantization Resolution</SelectLabel>
-              {[...new Array(QUANTIZATION_RESOLUTION.MAX)].map((_, i) => (
-                <SelectItem key={i + 1} value={`${i + 1}`}>
-                  {i + 1}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
+  return (
+    <div className='h-full p-2 '>
       <form
+        className='flex flex-col gap-2'
         onBlur={() => {
           if (form.state.isValid) {
             form.handleSubmit();
           }
         }}
       >
+        <form.Field
+          name='name'
+          validators={{
+            onBlur: ({ value }) =>
+              value.trim().length === 0
+                ? { message: 'Name cannot be empty.' }
+                : undefined,
+          }}
+          children={(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field>
+                <Input
+                  id={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  aria-invalid={isInvalid}
+                  placeholder='Track name'
+                  className='font-medium'
+                />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
+        />
+        <div className='flex gap-2'>
+          <form.Field
+            name='isQuantized'
+            children={(field) => (
+              <Toggle
+                variant={'outline'}
+                pressed={field.state.value}
+                onPressedChange={(pressed) => {
+                  field.handleChange(pressed);
+                  // submit immediately on toggle change
+                  form.handleSubmit();
+                }}
+              >
+                <MagnetIcon />
+              </Toggle>
+            )}
+          />
+          <form.Field
+            name='quantizationResolution'
+            children={(field) => (
+              <Select
+                value={String(field.state.value)}
+                onValueChange={(value) => {
+                  field.handleChange(Number(value));
+                  // submit immediately on select change
+                  form.handleSubmit();
+                }}
+              >
+                <SelectTrigger className='w-full max-w-48'>
+                  <SelectValue placeholder='Quant. Res' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Quantization Resolution</SelectLabel>
+                    {[...new Array(QUANTIZATION_RESOLUTION.MAX)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
         <div className='flex gap-2'>
           <form.Field
             name='minNote'
@@ -189,40 +228,40 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
         <form.Subscribe selector={(state) => state.errors}>
           {(errors) => errors.length > 0 && <FieldError errors={errors} />}
         </form.Subscribe>
+        <div className='flex justify-between'>
+          <TrackDialog mode='edit' trackId={track.trackId} />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant={'destructive'}>
+                <Trash2Icon />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This will permanently delete this track.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant={'outline'}>Cancel</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button
+                    variant={'destructive'}
+                    onClick={() =>
+                      dispatch(trackSlice.actions.deleteTrack({ trackId }))
+                    }
+                  >
+                    Delete
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </form>
-      <div className='flex justify-between'>
-        <TrackDialog mode='edit' trackId={track.trackId} />
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant={'destructive'}>
-              <Trash2Icon />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you absolutely sure?</DialogTitle>
-              <DialogDescription>
-                This will permanently delete this track.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant={'outline'}>Cancel</Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button
-                  variant={'destructive'}
-                  onClick={() =>
-                    dispatch(trackSlice.actions.deleteTrack({ trackId }))
-                  }
-                >
-                  Delete
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
     </div>
   );
 };
