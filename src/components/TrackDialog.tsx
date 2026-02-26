@@ -128,222 +128,202 @@ export const TrackDialog = (props: TrackDialogProps) => {
     ? 'Update track options'
     : 'Specify track options';
 
-  const formId = `track-form-${props.mode}${props.mode === 'edit' ? `-${props.trackId}` : ''}`;
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <form
-        id={formId}
-        className='h-12'
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button>{title}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>{description}</DialogDescription>
-          </DialogHeader>
+      <DialogTrigger asChild>
+        <Button>{title}</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <form.Field
+          name='name'
+          children={(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field data-invalid={isInvalid}>
+                <FieldLabel htmlFor={field.name}>Track Name</FieldLabel>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  aria-invalid={isInvalid}
+                  type='text'
+                />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            );
+          }}
+        />
+        <FieldSet>
+          <FieldLegend>Polyphony</FieldLegend>
           <form.Field
-            name='name'
+            name='polyphony'
             children={(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
               return (
-                <Field data-invalid={isInvalid}>
-                  <FieldLabel htmlFor={field.name}>Track Name</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
+                <FieldGroup>
+                  <RadioGroup
                     value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                    type='text'
-                  />
+                    onValueChange={field.handleChange}
+                  >
+                    <FieldLabel htmlFor='track-option-monophonic'>
+                      <Field orientation='horizontal' data-invalid={isInvalid}>
+                        <RadioGroupItem
+                          value='monophonic'
+                          id='track-option-monophonic'
+                          aria-invalid={isInvalid}
+                        />
+                        <FieldContent>
+                          <FieldTitle>Monophonic</FieldTitle>
+                          <FieldDescription>
+                            One pitch/sound only - used for rhythmic tracks
+                          </FieldDescription>
+                        </FieldContent>
+                      </Field>
+                    </FieldLabel>
+                    <FieldLabel htmlFor='track-option-polyphonic'>
+                      <Field orientation='horizontal' data-invalid={isInvalid}>
+                        <RadioGroupItem
+                          value='polyphonic'
+                          id='track-option-polyphonic'
+                          aria-invalid={isInvalid}
+                        />
+                        <FieldContent>
+                          <FieldTitle>Polyphonic</FieldTitle>
+                          <FieldDescription>
+                            Multiple notes at a time
+                          </FieldDescription>
+                        </FieldContent>
+                      </Field>
+                    </FieldLabel>
+                  </RadioGroup>
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                </Field>
+                </FieldGroup>
               );
             }}
           />
-          <FieldSet>
-            <FieldLegend>Polyphony</FieldLegend>
+        </FieldSet>
+        <FieldSet>
+          <FieldLegend>Quantization</FieldLegend>
+          <FieldGroup>
             <form.Field
-              name='polyphony'
+              name='isQuantized'
+              children={(field) => {
+                return (
+                  <Field orientation='horizontal'>
+                    <Checkbox
+                      id={field.name}
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => {
+                        field.handleChange(!!checked);
+                      }}
+                      onBlur={field.handleBlur}
+                    />
+                    <FieldLabel htmlFor={field.name}>Quantize</FieldLabel>
+                  </Field>
+                );
+              }}
+            />
+            <form.Subscribe
+              selector={(state) => state.values.isQuantized}
+              children={(isQuantized) =>
+                isQuantized && (
+                  <form.Field
+                    name='quantizationResolution'
+                    children={(field) => (
+                      <Field>
+                        <FieldLabel htmlFor={field.name}>Resolution</FieldLabel>
+                        <Slider
+                          id={field.name}
+                          value={field.state.value}
+                          onValueChange={(values) => {
+                            field.handleChange(values);
+                          }}
+                          min={QUANTIZATION_RESOLUTION.MIN}
+                          max={QUANTIZATION_RESOLUTION.MAX}
+                        />
+                      </Field>
+                    )}
+                  />
+                )
+              }
+            />
+          </FieldGroup>
+        </FieldSet>
+
+        <FieldSet>
+          <FieldLegend>Note Range</FieldLegend>
+          <FieldGroup className='grid grid-cols-2 gap-4'>
+            <form.Field
+              name='minNote'
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
                 return (
-                  <FieldGroup>
-                    <RadioGroup
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Minimum Note</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
                       value={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      <FieldLabel htmlFor='track-option-monophonic'>
-                        <Field
-                          orientation='horizontal'
-                          data-invalid={isInvalid}
-                        >
-                          <RadioGroupItem
-                            value='monophonic'
-                            id='track-option-monophonic'
-                            aria-invalid={isInvalid}
-                          />
-                          <FieldContent>
-                            <FieldTitle>Monophonic</FieldTitle>
-                            <FieldDescription>
-                              One pitch/sound only - used for rhythmic tracks
-                            </FieldDescription>
-                          </FieldContent>
-                        </Field>
-                      </FieldLabel>
-                      <FieldLabel htmlFor='track-option-polyphonic'>
-                        <Field
-                          orientation='horizontal'
-                          data-invalid={isInvalid}
-                        >
-                          <RadioGroupItem
-                            value='polyphonic'
-                            id='track-option-polyphonic'
-                            aria-invalid={isInvalid}
-                          />
-                          <FieldContent>
-                            <FieldTitle>Polyphonic</FieldTitle>
-                            <FieldDescription>
-                              Multiple notes at a time
-                            </FieldDescription>
-                          </FieldContent>
-                        </Field>
-                      </FieldLabel>
-                    </RadioGroup>
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      type='text'
+                    />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
-                  </FieldGroup>
+                  </Field>
                 );
               }}
             />
-          </FieldSet>
-          <FieldSet>
-            <FieldLegend>Quantization</FieldLegend>
-            <FieldGroup>
-              <form.Field
-                name='isQuantized'
-                children={(field) => {
-                  return (
-                    <Field orientation='horizontal'>
-                      <Checkbox
-                        id={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) => {
-                          field.handleChange(!!checked);
-                        }}
-                        onBlur={field.handleBlur}
-                      />
-                      <FieldLabel htmlFor={field.name}>Quantize</FieldLabel>
-                    </Field>
-                  );
-                }}
-              />
-              <form.Subscribe
-                selector={(state) => state.values.isQuantized}
-                children={(isQuantized) =>
-                  isQuantized && (
-                    <form.Field
-                      name='quantizationResolution'
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel htmlFor={field.name}>
-                            Resolution
-                          </FieldLabel>
-                          <Slider
-                            id={field.name}
-                            value={field.state.value}
-                            onValueChange={(values) => {
-                              field.handleChange(values);
-                            }}
-                            min={QUANTIZATION_RESOLUTION.MIN}
-                            max={QUANTIZATION_RESOLUTION.MAX}
-                          />
-                        </Field>
-                      )}
+            <form.Field
+              name='maxNote'
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Maximum Note</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                      type='text'
                     />
-                  )
-                }
-              />
-            </FieldGroup>
-          </FieldSet>
-
-          <FieldSet>
-            <FieldLegend>Note Range</FieldLegend>
-            <FieldGroup className='grid grid-cols-2 gap-4'>
-              <form.Field
-                name='minNote'
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Minimum Note</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        type='text'
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-              <form.Field
-                name='maxNote'
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Maximum Note</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                        type='text'
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-            </FieldGroup>
-          </FieldSet>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant='outline'>Cancel</Button>
-            </DialogClose>
-            <Button
-              type='submit'
-              form={`track-form-${props.mode}${props.mode === 'edit' ? `-${props.trackId}` : ''}`}
-            >
-              Save changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+          </FieldGroup>
+        </FieldSet>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant='outline'>Cancel</Button>
+          </DialogClose>
+          <Button
+            form={`track-form-${props.mode}${props.mode === 'edit' ? `-${props.trackId}` : ''}`}
+            type='button'
+            onClick={() => form.handleSubmit()}
+          >
+            Save changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -32,6 +32,7 @@ import { useForm } from '@tanstack/react-form';
 import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
 import type { NoteNameWithOctave } from '@/util/noteUtils';
 import { Field, FieldError } from './ui/field';
+import { useEffect } from 'react';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -86,10 +87,22 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
     },
   });
 
+  // Forces form to reset when track is updated elsewhere (like in the edit dialog)
+  useEffect(() => {
+    form.reset({
+      name: track.name,
+      isQuantized: track.isQuantized,
+      quantizationResolution: track.quantizationResolution,
+      minNote: track.minNote as string,
+      maxNote: track.maxNote as string,
+    });
+  }, [track]);
+
   return (
     <div className='h-full p-2 '>
       <form
         className='flex flex-col gap-2'
+        onSubmit={(e) => e.preventDefault()} // add this
         onBlur={() => {
           if (form.state.isValid) {
             form.handleSubmit();
