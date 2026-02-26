@@ -8,6 +8,7 @@ import {
   REHYDRATE,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import { projectRegistrySlice } from './projectRegistrySlice';
 
 const persistConfig = {
   key: 'root',
@@ -17,6 +18,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   tracks: trackSlice.reducer,
   project: projectSlice.reducer,
+  projectRegistry: projectRegistrySlice.reducer, // 👈 new
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

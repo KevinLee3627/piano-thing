@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface ProjectState {
+export interface ProjectState {
   isPlaying: boolean;
   totalDuration: number;
   pxPerSecondScale: number;
@@ -43,6 +43,9 @@ export const projectSlice = createSlice({
   name: 'project',
   initialState,
   reducers: {
+    loadState: (_, action: PayloadAction<ProjectState>) => {
+      return action.payload;
+    },
     startPlayback: (state) => {
       state.isPlaying = true;
     },

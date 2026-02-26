@@ -68,6 +68,9 @@ export const trackSlice = createSlice({
   name: 'track',
   initialState,
   reducers: {
+    loadState: (_, action: PayloadAction<TrackState>) => {
+      return action.payload;
+    },
     addTrack: (state, action: PayloadAction<AddTrackPayload>) => {
       const newTrackId = crypto.randomUUID();
       state[newTrackId] = {
