@@ -34,6 +34,7 @@ import { useState } from 'react';
 import { Checkbox } from './ui/checkbox';
 import { Slider } from './ui/slider';
 import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
+import { EditIcon } from 'lucide-react';
 
 const trackCreateFormSchema = z
   .object({
@@ -122,7 +123,7 @@ export const TrackDialog = (props: TrackDialogProps) => {
   });
 
   const isEditing = props.mode === 'edit';
-  const title = isEditing ? 'Edit Track' : 'Add Track';
+  const title = isEditing ? <EditIcon /> : 'Add Track';
   const description = isEditing
     ? 'Update track options'
     : 'Specify track options';

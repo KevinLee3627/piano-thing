@@ -70,7 +70,6 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
   return (
     <div className='h-full p-2 flex flex-col gap-2'>
       <p>{track.name}</p>
-      <TrackDialog mode='edit' trackId={track.trackId} />
       <div className='flex gap-2'>
         <Toggle
           variant={'outline'}
@@ -191,7 +190,8 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
           {(errors) => errors.length > 0 && <FieldError errors={errors} />}
         </form.Subscribe>
       </form>
-      <div>
+      <div className='flex justify-between'>
+        <TrackDialog mode='edit' trackId={track.trackId} />
         <Dialog>
           <DialogTrigger asChild>
             <Button variant={'destructive'}>
