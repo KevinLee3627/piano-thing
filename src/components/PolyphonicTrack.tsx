@@ -101,7 +101,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const frequency = getNoteFreqByName(`${noteName}`);
 
           const duration = project.secondsPerMeasure / project.beatsPerMeasure;
-          const blockWidth = duration * project.pxPerSecondScale;
+          let blockWidth = duration * project.pxPerSecondScale;
 
           let startTime = mouseX / project.pxPerSecondScale;
           // Check if creating a block at the clicked position would overlap an adjacent block
@@ -118,6 +118,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             // around the left edge of the new block.
             startTime = Math.floor(startTime / snapPointGap) * snapPointGap;
           } else {
+            // Limits the width of a block if too close to an adjacennt block
             const closestNeighbor = Object.values(track.blocks)
               .filter(
                 (block) =>
@@ -125,9 +126,11 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               )
               .sort((a, b) => a.dims.left - b.dims.left)
               .at(0);
-            if (closestNeighbor != null) {
-              if (mouseX + blockWidth > closestNeighbor.dims.left) return;
-            }
+            if (
+              closestNeighbor != null &&
+              mouseX + blockWidth > closestNeighbor.dims.left
+            )
+              blockWidth = closestNeighbor.dims.left - mouseX;
           }
 
           dispatch(
