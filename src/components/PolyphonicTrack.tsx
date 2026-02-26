@@ -98,9 +98,14 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
 
           const clickedIndex = Math.floor(mouseY / BLOCK_HEIGHT);
           const noteName = notes[clickedIndex];
+          const frequency = getNoteFreqByName(`${noteName}`);
 
           const duration = project.secondsPerMeasure / project.beatsPerMeasure;
+          const blockWidth = duration * project.pxPerSecondScale;
+
           let startTime = mouseX / project.pxPerSecondScale;
+          // Check if creating a block at the clicked position would overlap an adjacent block
+          // if the track is quantized, we don't care b/c overlaps don't happen
           if (track.isQuantized) {
             const snapPointGap =
               project.secondsPerMeasure /
@@ -112,6 +117,17 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             // of the cursor within the block, while creation of blocks is centered
             // around the left edge of the new block.
             startTime = Math.floor(startTime / snapPointGap) * snapPointGap;
+          } else {
+            const closestNeighbor = Object.values(track.blocks)
+              .filter(
+                (block) =>
+                  block.frequency === frequency && block.dims.left > mouseX,
+              )
+              .sort((a, b) => a.dims.left - b.dims.left)
+              .at(0);
+            if (closestNeighbor != null) {
+              if (mouseX + blockWidth > closestNeighbor.dims.left) return;
+            }
           }
 
           dispatch(
@@ -119,12 +135,12 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
               trackId: track.trackId,
               startTime,
               duration,
-              frequency: getNoteFreqByName(`${noteName}`),
+              frequency,
               gain: 1,
               dims: {
                 top: clickedIndex * BLOCK_HEIGHT,
                 left: startTime * project.pxPerSecondScale,
-                width: duration * project.pxPerSecondScale,
+                width: blockWidth,
                 height: BLOCK_HEIGHT,
               },
               isSelected: true,
