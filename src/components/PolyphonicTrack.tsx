@@ -44,7 +44,7 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
         {noteName}
       </div>
     ));
-  }, [track.minNote, track.maxNote]);
+  }, [notes]);
 
   useEffect(() => {
     if (trackRef.current == null) return;
@@ -188,18 +188,14 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           }}
         >
           {railDimensions &&
-            Object.entries(track.blocks).map(([blockId, block]) => {
-              if (trackRef.current == null) return null;
-
-              return (
-                <Block
-                  key={blockId}
-                  trackId={props.trackId}
-                  {...block}
-                  railDimensions={railDimensions}
-                />
-              );
-            })}
+            Object.entries(track.blocks).map(([blockId, block]) => (
+              <Block
+                key={blockId}
+                trackId={props.trackId}
+                {...block}
+                railDimensions={railDimensions}
+              />
+            ))}
         </div>
       </div>
     </div>
