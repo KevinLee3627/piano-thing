@@ -12,6 +12,7 @@ import {
   selectActiveProject,
 } from '@/app/projectRegistrySlice';
 import { OpenProjectDialog } from './OpenProjectDialog';
+import { CreateProjectDialog } from './CreateProjectDialog';
 
 export const TitleBar = () => {
   const dispatch = useAppDispatch();
@@ -25,17 +26,7 @@ export const TitleBar = () => {
       <MenubarMenu>
         <MenubarTrigger>File ({activeProject.name})</MenubarTrigger>
         <MenubarContent>
-          <MenubarItem
-            onClick={() => {
-              dispatch(
-                projectRegistrySlice.actions.createProject({
-                  name: 'Project 2',
-                }),
-              );
-            }}
-          >
-            New Project
-          </MenubarItem>
+          <CreateProjectDialog />
           <MenubarItem
             onClick={() => {
               dispatch(
