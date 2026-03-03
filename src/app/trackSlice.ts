@@ -43,20 +43,23 @@ export interface Track {
 
 export type TrackState = Record<string, Track>;
 
-const initialTrackID = crypto.randomUUID();
-const initialState: TrackState = {
-  [initialTrackID]: {
-    trackId: initialTrackID,
-    blocks: {},
-    isPlaying: false,
-    isExpanded: true,
-    polyphony: 'polyphonic',
-    name: 'Track 1',
-    minNote: 'A3',
-    maxNote: 'A4',
-    isQuantized: true,
-    quantizationResolution: QUANTIZATION_RESOLUTION.MIN,
-  },
+export const createInitialTrackState = (): TrackState => {
+  const initialTrackID = crypto.randomUUID();
+  const initialTrackState: TrackState = {
+    [initialTrackID]: {
+      trackId: initialTrackID,
+      blocks: {},
+      isPlaying: false,
+      isExpanded: true,
+      polyphony: 'polyphonic',
+      name: 'Track 1',
+      minNote: 'A3',
+      maxNote: 'A4',
+      isQuantized: true,
+      quantizationResolution: QUANTIZATION_RESOLUTION.MIN,
+    },
+  };
+  return initialTrackState;
 };
 
 type AddTrackPayload = Omit<
@@ -66,7 +69,7 @@ type AddTrackPayload = Omit<
 
 export const trackSlice = createSlice({
   name: 'track',
-  initialState,
+  initialState: createInitialTrackState(),
   reducers: {
     loadState: (_, action: PayloadAction<TrackState>) => {
       return action.payload;

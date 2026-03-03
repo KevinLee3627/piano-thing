@@ -27,6 +27,7 @@ import {
   SelectContent,
   SelectItem,
 } from '../ui/select';
+import { createInitialTrackState, trackSlice } from '@/app/trackSlice';
 
 // TODO: Thse are hard coded in the Timeline time sig editor as well...ddefinne osmewhere else?
 const BEAT_VALUE_OPTIONS = [1, 2, 4, 8, 16];
@@ -95,6 +96,8 @@ export const CreateProjectDialog = () => {
           beatValue: 1 / value.beatValue,
         }),
       );
+
+      dispatch(trackSlice.actions.loadState(createInitialTrackState()));
 
       setIsOpen(false);
     },
