@@ -6,7 +6,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { TrackDialog } from './TrackDialog';
 import { Toggle } from './ui/toggle';
-import { MagnetIcon, Trash2Icon } from 'lucide-react';
+import { MagnetIcon, Trash2Icon, Volume2Icon } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -33,6 +33,7 @@ import { noteSchema, validateMinMaxNotes } from '@/util/trackValidation';
 import type { NoteNameWithOctave } from '@/util/noteUtils';
 import { Field, FieldError } from './ui/field';
 import { useEffect } from 'react';
+import { Slider } from './ui/slider';
 
 interface TrackControlProps {
   trackId: Track['trackId'];
@@ -50,6 +51,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
       quantizationResolution: track.quantizationResolution,
       minNote: track.minNote as string,
       maxNote: track.maxNote as string,
+      volume: track.volume ?? 1,
     },
     validators: {
       onBlur: ({ value }) => {
@@ -70,6 +72,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
           quantizationResolution: value.quantizationResolution,
           minNote: value.minNote as NoteNameWithOctave,
           maxNote: value.maxNote as NoteNameWithOctave,
+          volume: value.volume,
         }),
       );
 
@@ -95,6 +98,7 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
       quantizationResolution: track.quantizationResolution,
       minNote: track.minNote as string,
       maxNote: track.maxNote as string,
+      volume: track.volume ?? 1,
     });
   }, [track]);
 
@@ -241,6 +245,22 @@ export const TrackControl = ({ trackId }: TrackControlProps) => {
         <form.Subscribe selector={(state) => state.errors}>
           {(errors) => errors.length > 0 && <FieldError errors={errors} />}
         </form.Subscribe>
+        <form.Field
+          name='volume'
+          children={(field) => (
+            <div className='flex items-center gap-2'>
+              <Volume2Icon className='size-4 shrink-0 text-muted-foreground' />
+              <Slider
+                min={0}
+                max={100}
+                value={[Math.round(field.state.value * 100)]}
+                onValueChange={([val]) => {
+                  field.handleChange(val / 100);
+                }}
+              />
+            </div>
+          )}
+        />
         <div className='flex justify-between'>
           <TrackDialog mode='edit' trackId={track.trackId} />
           <Dialog>

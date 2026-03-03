@@ -37,13 +37,16 @@ export const Track = (props: TrackProps) => {
       const ATTACK_TIME = 0.05; // 10ms
       const RELEASE_TIME = 0.05; // 20ms
 
+      // consider track's volume when setting gain
+
+      const effectiveGain = block.gain * (track.volume ?? 1);
       gainNode.gain.setValueAtTime(0, startTime);
       gainNode.gain.linearRampToValueAtTime(
-        block.gain,
+        effectiveGain,
         startTime + ATTACK_TIME,
       );
       gainNode.gain.setValueAtTime(
-        block.gain,
+        effectiveGain,
         startTime + duration - RELEASE_TIME,
       );
       gainNode.gain.linearRampToValueAtTime(0, startTime + duration);

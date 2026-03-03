@@ -25,6 +25,11 @@ export const QUANTIZATION_RESOLUTION = {
   MAX: 8,
 };
 
+export const VOLUME = {
+  MIN: 0,
+  MAX: 1,
+};
+
 export interface Track {
   trackId: string;
   blocks: Record<string, Block>;
@@ -39,6 +44,7 @@ export interface Track {
   // For example, if one beat = one quarter note = 1/4, then a resolution of 1 = quantize to the quarter note = (1/4) / 1
   // if resolution = 2, (1/4) / 2 -> quantize to an 1/8 note
   quantizationResolution: number;
+  volume: number;
 }
 
 export type TrackState = Record<string, Track>;
@@ -57,6 +63,7 @@ export const createInitialTrackState = (): TrackState => {
       maxNote: 'A4',
       isQuantized: true,
       quantizationResolution: QUANTIZATION_RESOLUTION.MIN,
+      volume: 1,
     },
   };
   return initialTrackState;
@@ -88,6 +95,7 @@ export const trackSlice = createSlice({
         maxNote: action.payload.maxNote,
         isQuantized: action.payload.isQuantized,
         quantizationResolution: action.payload.quantizationResolution,
+        volume: action.payload.volume ?? 1,
       };
     },
     editTrack: (
@@ -128,6 +136,12 @@ export const trackSlice = createSlice({
     ) => {
       state[action.payload.trackId].quantizationResolution =
         action.payload.quantizationResolution;
+    },
+    setTrackVolume: (
+      state,
+      action: PayloadAction<Pick<Track, 'trackId' | 'volume'>>,
+    ) => {
+      state[action.payload.trackId].volume = action.payload.volume;
     },
     addBlock: (
       state,
