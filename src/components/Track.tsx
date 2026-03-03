@@ -32,8 +32,21 @@ export const Track = (props: TrackProps) => {
 
       const gainNode = audioContext.createGain();
 
-      gainNode.gain.setValueAtTime(block.gain, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.01, startTime + duration);
+      // adding attack and release so the notes don't "clip" when right next to each other
+      // TODO: hard-coded - bad? good? idk
+      const ATTACK_TIME = 0.05; // 10ms
+      const RELEASE_TIME = 0.05; // 20ms
+
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(
+        block.gain,
+        startTime + ATTACK_TIME,
+      );
+      gainNode.gain.setValueAtTime(
+        block.gain,
+        startTime + duration - RELEASE_TIME,
+      );
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
 
       oscillatorNode.connect(gainNode);
       gainNode.connect(audioContext.destination);
