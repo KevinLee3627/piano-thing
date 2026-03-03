@@ -89,6 +89,13 @@ export const projectRegistrySlice = createSlice({
         state.activeProjectId = Object.keys(state.projects)[0];
       }
     },
+    importProject: (state, action: PayloadAction<ProjectEntry>) => {
+      const entry = action.payload;
+      // generate fresh id to avoid collisions
+      const id = crypto.randomUUID();
+      state.projects[id] = { ...entry, id };
+      state.activeProjectId = id;
+    },
   },
 });
 
