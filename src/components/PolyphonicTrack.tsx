@@ -100,7 +100,8 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
           const noteName = notes[clickedIndex];
           const frequency = getNoteFreqByName(`${noteName}`);
 
-          const duration = project.secondsPerMeasure / project.beatsPerMeasure;
+          // default duration should be based on quantization resolution, if quantized
+          let duration = project.secondsPerMeasure / project.beatsPerMeasure;
           let blockWidth = duration * project.pxPerSecondScale;
 
           let startTime = mouseX / project.pxPerSecondScale;
@@ -117,6 +118,8 @@ export const PolyphonicTrack = (props: PolyphonicTrackProps) => {
             // of the cursor within the block, while creation of blocks is centered
             // around the left edge of the new block.
             startTime = Math.floor(startTime / snapPointGap) * snapPointGap;
+            duration = duration / track.quantizationResolution;
+            blockWidth = duration * project.pxPerSecondScale;
           } else {
             // Limits the width of a block if too close to an adjacennt block
             const closestNeighbor = Object.values(track.blocks)
