@@ -5,6 +5,7 @@ import {
   MenubarGroup,
   MenubarItem,
   MenubarMenu,
+  MenubarSeparator,
   MenubarTrigger,
 } from '@/components/ui/menubar';
 import {
@@ -93,8 +94,22 @@ export const TitleBar = () => {
             Save Project
           </MenubarItem>
           <OpenProjectDialog />
-          <MenubarItem onClick={handleExport}>Export Project</MenubarItem>
-          <MenubarItem onClick={handleImport}>Import Project</MenubarItem>
+          <MenubarSeparator />
+          <MenubarGroup>
+            <MenubarItem onClick={handleExport}>Export Project</MenubarItem>
+            <MenubarItem onClick={handleImport}>Import Project</MenubarItem>
+          </MenubarGroup>
+          <MenubarSeparator />
+          <MenubarItem
+            variant='destructive'
+            onClick={() => {
+              dispatch(
+                projectRegistrySlice.actions.deleteProject(activeProject.id),
+              );
+            }}
+          >
+            Delete Project
+          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
       <MenubarMenu>
