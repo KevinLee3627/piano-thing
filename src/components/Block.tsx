@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { trackSlice, type Track } from '../app/trackSlice';
 import { cn } from '@/lib/utils';
 import { generateNoteRange, getNoteFreqByName } from '@/util/noteUtils';
+import { shallowEqual } from 'react-redux';
 
 interface BlockProps {
   trackId: string;
@@ -157,14 +158,17 @@ export const Block = (props: BlockProps) => {
     totalDuration,
     timelineScrollLeft,
     timelineScrollTop,
-  } = useAppSelector((state) => ({
-    pxPerMeasureScale: state.project.pxPerMeasureScale,
-    pxPerSecondScale: state.project.pxPerSecondScale,
-    beatsPerMeasure: state.project.beatsPerMeasure,
-    totalDuration: state.project.totalDuration,
-    timelineScrollLeft: state.project.timelineScrollLeft,
-    timelineScrollTop: state.project.timelineScrollTop,
-  }));
+  } = useAppSelector(
+    (state) => ({
+      pxPerMeasureScale: state.project.pxPerMeasureScale,
+      pxPerSecondScale: state.project.pxPerSecondScale,
+      beatsPerMeasure: state.project.beatsPerMeasure,
+      totalDuration: state.project.totalDuration,
+      timelineScrollLeft: state.project.timelineScrollLeft,
+      timelineScrollTop: state.project.timelineScrollTop,
+    }),
+    shallowEqual,
+  );
 
   const {
     trackId,
@@ -173,14 +177,18 @@ export const Block = (props: BlockProps) => {
     isQuantized,
     quantizationResolution,
     trackBlocks,
-  } = useAppSelector((state) => ({
-    trackId: state.tracks[props.trackId].trackId,
-    minNote: state.tracks[props.trackId].minNote,
-    maxNote: state.tracks[props.trackId].maxNote,
-    isQuantized: state.tracks[props.trackId].isQuantized,
-    quantizationResolution: state.tracks[props.trackId].quantizationResolution,
-    trackBlocks: state.tracks[props.trackId].blocks,
-  }));
+  } = useAppSelector(
+    (state) => ({
+      trackId: state.tracks[props.trackId].trackId,
+      minNote: state.tracks[props.trackId].minNote,
+      maxNote: state.tracks[props.trackId].maxNote,
+      isQuantized: state.tracks[props.trackId].isQuantized,
+      quantizationResolution:
+        state.tracks[props.trackId].quantizationResolution,
+      trackBlocks: state.tracks[props.trackId].blocks,
+    }),
+    shallowEqual,
+  );
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
   const [pointerMode, setPointerMode] = useState<PointerMode>('idle');
