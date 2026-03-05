@@ -144,11 +144,43 @@ const MIN_BLOCK_WIDTH = 20; // in px
 
 export const Block = (props: BlockProps) => {
   const dispatch = useAppDispatch();
-  const project = useAppSelector((state) => state.project);
-  const trackInfo = useAppSelector((state) => state.tracks[props.trackId]);
+  // const project = useAppSelector((state) => state.project);
+  // const trackInfo = useAppSelector((state) => state.tracks[props.trackId]);
   const blockInfo = useAppSelector(
     (state) => state.tracks[props.trackId].blocks[props.blockId],
   );
+
+  const {
+    pxPerMeasureScale,
+    pxPerSecondScale,
+    beatsPerMeasure,
+    totalDuration,
+    timelineScrollLeft,
+    timelineScrollTop,
+  } = useAppSelector((state) => ({
+    pxPerMeasureScale: state.project.pxPerMeasureScale,
+    pxPerSecondScale: state.project.pxPerSecondScale,
+    beatsPerMeasure: state.project.beatsPerMeasure,
+    totalDuration: state.project.totalDuration,
+    timelineScrollLeft: state.project.timelineScrollLeft,
+    timelineScrollTop: state.project.timelineScrollTop,
+  }));
+
+  const {
+    trackId,
+    minNote,
+    maxNote,
+    isQuantized,
+    quantizationResolution,
+    trackBlocks,
+  } = useAppSelector((state) => ({
+    trackId: state.tracks[props.trackId].trackId,
+    minNote: state.tracks[props.trackId].minNote,
+    maxNote: state.tracks[props.trackId].maxNote,
+    isQuantized: state.tracks[props.trackId].isQuantized,
+    quantizationResolution: state.tracks[props.trackId].quantizationResolution,
+    trackBlocks: state.tracks[props.trackId].blocks,
+  }));
 
   const [pointerIsPressed, setPointerIsPressed] = useState(false);
   const [pointerMode, setPointerMode] = useState<PointerMode>('idle');
@@ -156,8 +188,8 @@ export const Block = (props: BlockProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
 
   const noteRange = useMemo(
-    () => generateNoteRange(trackInfo.minNote, trackInfo.maxNote).reverse(),
-    [trackInfo.minNote, trackInfo.maxNote],
+    () => generateNoteRange(minNote, maxNote).reverse(),
+    [minNote, maxNote],
   );
 
   const clickOffsetRef = useRef(0); // Store offset from click to block's left edge
@@ -165,17 +197,11 @@ export const Block = (props: BlockProps) => {
   const quantizeValue = useCallback(
     (value: number) => {
       const snapPointGap =
-        project.pxPerMeasureScale /
-        project.beatsPerMeasure /
-        trackInfo.quantizationResolution;
+        pxPerMeasureScale / beatsPerMeasure / quantizationResolution;
 
       return Math.round(value / snapPointGap) * snapPointGap;
     },
-    [
-      project.pxPerMeasureScale,
-      project.beatsPerMeasure,
-      trackInfo.quantizationResolution,
-    ],
+    [pxPerMeasureScale, beatsPerMeasure, quantizationResolution],
   );
 
   const handleBlockMove = (
@@ -183,9 +209,8 @@ export const Block = (props: BlockProps) => {
     mouseY: number,
     blockWidth: number,
   ) => {
-    let proposedLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
-    const maxLeft =
-      project.totalDuration * project.pxPerSecondScale - blockWidth;
+    let proposedLeft = isQuantized ? quantizeValue(mouseX) : mouseX;
+    const maxLeft = totalDuration * pxPerSecondScale - blockWidth;
 
     const constrainedNewLeft = Math.max(Math.min(proposedLeft, maxLeft), 0);
 
@@ -202,7 +227,7 @@ export const Block = (props: BlockProps) => {
       proposedLeft: constrainedNewLeft,
       proposedTop: constrainedProposedTop,
       selectedBlock: blockInfo,
-      allBlocks: trackInfo.blocks,
+      allBlocks: trackBlocks,
     });
 
     // Get the new note based on y position
@@ -212,7 +237,7 @@ export const Block = (props: BlockProps) => {
 
     // Calculate new start time basedd on x position
     const newStartTime =
-      (finalNewLeft / props.railDimensions.width) * project.totalDuration;
+      (finalNewLeft / props.railDimensions.width) * totalDuration;
 
     dispatch(
       trackSlice.actions.editBlock({
@@ -236,14 +261,14 @@ export const Block = (props: BlockProps) => {
     dragDirection: DragDirection,
   ) => {
     if (!pointerIsPressed) return;
-    const neighbors = Object.values(trackInfo.blocks).filter(
+    const neighbors = Object.values(trackBlocks).filter(
       (block) =>
         block.blockId !== blockInfo.blockId &&
         block.frequency === blockInfo.frequency,
     );
 
     if (resizeZone === 'left') {
-      let newLeft = trackInfo.isQuantized ? quantizeValue(mouseX) : mouseX;
+      let newLeft = isQuantized ? quantizeValue(mouseX) : mouseX;
 
       let newWidth = blockInfo.dims.width + blockInfo.dims.left - newLeft;
 
@@ -266,17 +291,16 @@ export const Block = (props: BlockProps) => {
         trackSlice.actions.editBlock({
           trackId: props.trackId,
           blockId: props.blockId,
-          startTime:
-            (newLeft / props.railDimensions.width) * project.totalDuration,
-          duration: newWidth / project.pxPerSecondScale,
+          startTime: (newLeft / props.railDimensions.width) * totalDuration,
+          duration: newWidth / pxPerSecondScale,
           dims: { ...blockInfo.dims, left: newLeft, width: newWidth },
         }),
       );
     } else if (resizeZone === 'right') {
       let newWidth = mouseX - blockInfo.dims.left + clickOffsetRef.current;
-      newWidth = trackInfo.isQuantized ? quantizeValue(newWidth) : newWidth;
+      newWidth = isQuantized ? quantizeValue(newWidth) : newWidth;
 
-      const maxRight = project.totalDuration * project.pxPerSecondScale;
+      const maxRight = totalDuration * pxPerSecondScale;
       const newRight = blockInfo.dims.left + newWidth;
       if (dragDirection === 'right' && newRight > maxRight) return;
       if (dragDirection === 'left' && newWidth < MIN_BLOCK_WIDTH) return;
@@ -296,7 +320,7 @@ export const Block = (props: BlockProps) => {
         trackSlice.actions.editBlock({
           trackId: props.trackId,
           blockId: props.blockId,
-          duration: newWidth / project.pxPerSecondScale,
+          duration: newWidth / pxPerSecondScale,
           dims: { ...blockInfo.dims, width: newWidth },
         }),
       );
@@ -322,7 +346,7 @@ export const Block = (props: BlockProps) => {
 
         dispatch(
           trackSlice.actions.selectBlock({
-            trackId: trackInfo.trackId,
+            trackId: trackId,
             blockId: blockInfo.blockId,
             multiSelect: e.shiftKey || e.ctrlKey,
           }),
@@ -330,7 +354,7 @@ export const Block = (props: BlockProps) => {
 
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
         // TODO: Can this be calculated in getrseizezone? or just have one place to calculate it in case the way we calc changes!
-        const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+        const blockWidth = blockInfo.duration * pxPerSecondScale;
         const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
 
         clickOffsetRef.current = mouseXInBlock;
@@ -352,16 +376,16 @@ export const Block = (props: BlockProps) => {
           e,
           props.railDimensions.left,
           clickOffsetRef.current,
-          project.timelineScrollLeft,
+          timelineScrollLeft,
         );
         const mouseXInBlock = calculateMouseXInBlock(e, blockRef);
         const mouseY = calculateMouseY(
           e,
           props.railDimensions.top,
-          project.timelineScrollTop,
+          timelineScrollTop,
         );
 
-        const blockWidth = blockInfo.duration * project.pxPerSecondScale;
+        const blockWidth = blockInfo.duration * pxPerSecondScale;
 
         const resizeZone = getResizeZone(mouseXInBlock, blockWidth);
         const dragDirection = mouseTracking.getDragDirection(mouseX);
