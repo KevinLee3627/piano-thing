@@ -5,7 +5,7 @@ import { PolyphonicTrack } from './PolyphonicTrack';
 
 interface TrackProps {
   trackId: string;
-  playbackTime: number;
+  playbackTimeRef: React.RefObject<number>;
 }
 
 export const Track = (props: TrackProps) => {
@@ -17,10 +17,12 @@ export const Track = (props: TrackProps) => {
     // TODO: https://old.reddit.com/r/javascript/comments/6juyjk/optimizing_the_sound_quality_of_web_audio_api/
     // Playing chords - fix gain value?
     Object.values(track.blocks).forEach((block) => {
-      if (block.startTime < props.playbackTime) return;
+      if (block.startTime < props.playbackTimeRef.current) return;
 
       const startTime =
-        audioContext.currentTime + block.startTime - props.playbackTime;
+        audioContext.currentTime +
+        block.startTime -
+        props.playbackTimeRef.current;
       const duration = block.duration;
 
       const oscillatorNode = audioContext.createOscillator();

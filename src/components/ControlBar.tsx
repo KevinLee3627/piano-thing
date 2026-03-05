@@ -1,7 +1,7 @@
 import { PauseIcon, PlayIcon, PlusIcon, RulerIcon } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { projectSlice } from '@/app/projectSlice';
 import { trackSlice } from '@/app/trackSlice';
@@ -22,7 +22,7 @@ import {
 } from './ui/select';
 
 interface ControlBarProps {
-  playbackTime: number;
+  playbackTimeRef: React.RefObject<number>;
   startPlaybackAndUIUpdates: () => Promise<void>;
   pause: () => Promise<void>;
 }
@@ -32,10 +32,23 @@ export function ControlBar(props: ControlBarProps) {
   const project = useAppSelector((state) => state.project);
   const tracks = useAppSelector((state) => state.tracks);
 
+  const [displayTime, setDisplayTime] = useState(0);
+
+  useEffect(() => {
+    let raf: number;
+    const tick = () => {
+      setDisplayTime(props.playbackTimeRef.current);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const currentMeasure =
-    Math.floor(props.playbackTime / project.secondsPerMeasure) + 1;
+    Math.floor(displayTime / project.secondsPerMeasure) + 1;
   const playbackTimeWithinMeasure =
-    props.playbackTime - (currentMeasure - 1) * project.secondsPerMeasure;
+    props.playbackTimeRef.current -
+    (currentMeasure - 1) * project.secondsPerMeasure;
   const secondsPerBeat = project.secondsPerMeasure / project.beatsPerMeasure;
   const currentBeatInMeasure =
     Math.floor(playbackTimeWithinMeasure / secondsPerBeat) + 1;
@@ -208,7 +221,9 @@ export function ControlBar(props: ControlBarProps) {
           )}
         </div>
         <div>
-          <p className='text-4xl'>{props.playbackTime.toFixed(2)}s</p>
+          <p className='text-4xl'>
+            {props.playbackTimeRef.current.toFixed(2)}s
+          </p>
           <p className='text-xs'>Playback Time</p>
         </div>
         <div>

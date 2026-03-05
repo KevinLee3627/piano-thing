@@ -2,7 +2,7 @@ import { Track } from '../components/Track';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { useGlobalAudioContext } from '../context/audioContext';
 import { trackSlice } from '../app/trackSlice';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Playhead } from './Playhead';
 import { TickMarks } from './TickMarks';
 import { Separator } from './ui/separator';
@@ -21,15 +21,7 @@ export function Timeline() {
 
   const audioContext = useGlobalAudioContext();
 
-  const [playbackTime, setPlaybackTime] = useState(0); // NOTE: Used for ui/animation/rendering
-
-  // NOTE: this ref is used to check when to stop the track
-  // the playbackTime state is not available in the updateUITime closure
-  // so we need to keep track of it in a ref
-  const playbackTimeRef = useRef(playbackTime);
-  useEffect(() => {
-    playbackTimeRef.current = playbackTime;
-  }, [playbackTime]);
+  const playbackTimeRef = useRef(0);
 
   const animationRef = useRef<number>(null);
   const msPrev = useRef(audioContext.currentTime);
@@ -40,8 +32,23 @@ export function Timeline() {
     const msPassed = (msNow - msPrev.current) * 1000;
 
     if (msPassed > MS_PER_FRAME) {
-      setPlaybackTime((prevPlaybackTime) => prevPlaybackTime + msPassed / 1000);
+      // setPlaybackTime((prevPlaybackTime) => prevPlaybackTime + msPassed / 1000);
+      playbackTimeRef.current += msPassed / 1000;
       msPrev.current = msNow;
+      if (topRowRef.current) {
+        const currentPlayheadLeft =
+          (playbackTimeRef.current / project.totalDuration) *
+          project.pxPerMeasureScale *
+          project.totalMeasures;
+        const halfwayMark = topRowRef.current.offsetWidth / 2;
+        if (currentPlayheadLeft > halfwayMark) {
+          topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
+          Object.values(trackRailRefs.current).forEach((railElem) => {
+            if (railElem == null || topRowRef.current == null) return;
+            railElem.scrollLeft = topRowRef.current.scrollLeft;
+          });
+        }
+      }
     }
 
     // NOTE: We calculate directly so we can stop at the correct time.
@@ -55,6 +62,7 @@ export function Timeline() {
   };
 
   const startPlaybackAndUIUpdates = async () => {
+    msPrev.current = audioContext.currentTime; // reset here
     await audioContext.resume();
 
     Object.values(tracks).forEach((track) =>
@@ -92,33 +100,12 @@ export function Timeline() {
   const topRowRef = useRef<HTMLDivElement>(null);
   const trackRailRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Handles auto-scroll of timeline
-  useEffect(() => {
-    if (topRowRef.current == null) return;
-    // NOTE: Halfway mark of the visible portion of the timeline
-    const currentPlayheadLeft =
-      (playbackTime / project.totalDuration) *
-      project.pxPerMeasureScale *
-      project.totalMeasures;
-    const halfwayMark = topRowRef.current.offsetWidth / 2;
-    const isPastHalfway = currentPlayheadLeft > halfwayMark;
-
-    if (isPastHalfway) {
-      // NOTE: What is the 'velocity' of the playhead? That = scroll speed?
-      topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
-      Object.values(trackRailRefs.current).forEach((railElem) => {
-        if (railElem == null || topRowRef.current == null) return;
-        railElem.scrollLeft = topRowRef.current.scrollLeft;
-      });
-    }
-  }, [playbackTime]);
-
   return (
     <div className='flex flex-col max-h-full border border-border rounded-md overflow-hidden'>
       <ControlBar
         startPlaybackAndUIUpdates={startPlaybackAndUIUpdates}
         pause={pause}
-        playbackTime={playbackTime}
+        playbackTimeRef={playbackTimeRef}
       />
       <Separator />
       <div className='flex'>
@@ -160,14 +147,13 @@ export function Timeline() {
                   project.totalMeasures * project.pxPerMeasureScale;
                 const playbackTime =
                   ((e.clientX - rect.left) / totalPx) * project.totalDuration;
-                setPlaybackTime(playbackTime);
+                playbackTimeRef.current = playbackTime;
               }}
             >
               <TickMarks />
               <Playhead
-                playbackTime={playbackTime}
                 railLeft={topRowRef.current?.offsetLeft ?? 0}
-                setPlaybackTime={setPlaybackTime}
+                playbackTimeRef={playbackTimeRef}
                 pause={pause}
                 play={startPlaybackAndUIUpdates}
               />
@@ -233,7 +219,7 @@ export function Timeline() {
                 <Track
                   key={`track-${track.trackId}`}
                   trackId={track.trackId}
-                  playbackTime={playbackTime}
+                  playbackTimeRef={playbackTimeRef}
                 />
               </div>
             </div>
