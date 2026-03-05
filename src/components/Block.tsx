@@ -138,7 +138,7 @@ const checkCollision = ({
 
 // TODO: don't hard-code this??
 export const BLOCK_HEIGHT = 24;
-const RESIZE_PX_THRESHOLD = 4;
+const RESIZE_PX_THRESHOLD = 8;
 // TODO: Is this value rasonable? Should threshold and width be adjusted based on scale?
 const MIN_BLOCK_WIDTH = 20; // in px
 

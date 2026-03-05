@@ -38,7 +38,8 @@ export const Track = (props: TrackProps) => {
       const RELEASE_TIME = 0.05; // 20ms
 
       // consider track's volume when setting gain
-
+      // if there are multiple blocks playing at the same time within the same track
+      // for ex. a chord,
       const effectiveGain = block.gain * (track.volume ?? 1);
       gainNode.gain.setValueAtTime(0, startTime);
       gainNode.gain.linearRampToValueAtTime(
