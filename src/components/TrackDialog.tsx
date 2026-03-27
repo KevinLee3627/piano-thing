@@ -102,6 +102,7 @@ export const TrackDialog = (props: TrackDialogProps) => {
             quantizationResolution: value.quantizationResolution[0],
             minNote: value.minNote as TrackCreateFormSchema['minNote'],
             maxNote: value.maxNote as TrackCreateFormSchema['maxNote'],
+            volume: 100,
           }),
         );
       } else {
