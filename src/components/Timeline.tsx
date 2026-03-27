@@ -32,7 +32,6 @@ export function Timeline() {
     const msPassed = (msNow - msPrev.current) * 1000;
 
     if (msPassed > MS_PER_FRAME) {
-      // setPlaybackTime((prevPlaybackTime) => prevPlaybackTime + msPassed / 1000);
       playbackTimeRef.current += msPassed / 1000;
       msPrev.current = msNow;
       if (topRowRef.current) {
@@ -40,12 +39,22 @@ export function Timeline() {
           (playbackTimeRef.current / project.totalDuration) *
           project.pxPerMeasureScale *
           project.totalMeasures;
-        const halfwayMark = topRowRef.current.offsetWidth / 2;
-        if (currentPlayheadLeft > halfwayMark) {
-          topRowRef.current.scrollLeft += project.pxPerSecondScale / FPS;
+        const viewportWidth = topRowRef.current.offsetWidth;
+        const totalTrackWidth =
+          project.pxPerMeasureScale * project.totalMeasures;
+        const halfwayMark = viewportWidth / 2;
+        const maxScrollLeft = totalTrackWidth - viewportWidth;
+
+        // start scrolling once the playhead passes halfway mark of timeline
+        if (currentPlayheadLeft > halfwayMark && maxScrollLeft > 0) {
+          // Advance scroll by exactly how far the playhead moved this frame,
+          // so the playhead stays centered
+          const scrollDelta = project.pxPerSecondScale * (msPassed / 1000);
+          const newScrollLeft = topRowRef.current.scrollLeft + scrollDelta;
+          topRowRef.current.scrollLeft = newScrollLeft;
           Object.values(trackRailRefs.current).forEach((railElem) => {
-            if (railElem == null || topRowRef.current == null) return;
-            railElem.scrollLeft = topRowRef.current.scrollLeft;
+            if (railElem == null) return;
+            railElem.scrollLeft = newScrollLeft;
           });
         }
       }
